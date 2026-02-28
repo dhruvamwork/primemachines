@@ -13,6 +13,7 @@ export default function PartnerProgram() {
         pan: "",
         mobile: "",
         email: "",
+        password: "",
         fleetSize: "",
         machineTypes: "",
         regions: "",
@@ -45,8 +46,23 @@ export default function PartnerProgram() {
         setError("");
 
         try {
-            // We are using 'companyName' for both company and contact fields just for the sake of simplicity 
-            // since the form doesn't separate them out yet based on the mockup.
+            // 1. Sign them up in Supabase Auth so they can log in later
+            const { data: authData, error: authError } = await supabase.auth.signUp({
+                email: formData.email,
+                password: formData.password,
+                options: {
+                    data: { full_name: formData.fullName }
+                }
+            });
+
+            if (authError) {
+                if (authError.message.includes("already registered")) {
+                    throw new Error("This email is already registered. Please login instead.");
+                }
+                throw authError;
+            }
+
+            // 2. Insert application into `vendors` table
             const { error: insertError } = await supabase
                 .from('vendors')
                 .insert([
@@ -59,13 +75,12 @@ export default function PartnerProgram() {
                         fleet_size: formData.fleetSize,
                         pincode: formData.pincode,
                         years_in_business: formData.yearsInBusiness,
-                        status: 'pending'
+                        status: 'pending' // Admin still needs to approve them
                     }
                 ]);
 
             if (insertError) {
                 console.error("Supabase Insert Error:", insertError);
-                // Handle specific constraint errors (like duplicate emails/phones)
                 if (insertError.code === '23505') {
                     throw new Error("An application with this email or mobile number already exists.");
                 }
@@ -176,6 +191,10 @@ export default function PartnerProgram() {
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">Email Address</label>
                                         <input name="email" value={formData.email} onChange={handleChange} className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="vendor@company.com" type="email" required />
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-semibold">Create Password</label>
+                                        <input name="password" value={formData.password} onChange={handleChange} className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="8+ characters" type="password" required minLength={8} />
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">Years in Business</label>

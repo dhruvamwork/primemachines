@@ -2,72 +2,38 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { HardHat, Phone, Mail, ArrowRight, ShieldCheck, KeyRound } from "lucide-react";
+import { HardHat, Mail, ArrowRight, ShieldCheck, KeyRound } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default function VendorLogin() {
     const router = useRouter();
-    const [loginMethod, setLoginMethod] = useState<"phone" | "email">("phone");
-    const [contact, setContact] = useState("");
-    const [otp, setOtp] = useState("");
-    const [step, setStep] = useState<"request" | "verify">("request");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
-    const handleSendOtp = async (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
 
-        if (!contact) {
-            setError(`Please enter your ${loginMethod === 'phone' ? 'mobile number' : 'email'}`);
-            return;
-        }
-
-        // Validate 10-digit phone number
-        if (loginMethod === 'phone' && !/^\d{10}$/.test(contact)) {
-            setError("Please enter a valid 10-digit mobile number");
+        if (!email || !password) {
+            setError("Please enter both email and password");
             return;
         }
 
         setLoading(true);
         try {
-            const phoneWithCode = loginMethod === 'phone' ? `+91${contact}` : contact;
-            const { error: signInError } = loginMethod === "phone"
-                ? await supabase.auth.signInWithOtp({ phone: phoneWithCode })
-                : await supabase.auth.signInWithOtp({ email: contact });
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
 
             if (signInError) throw signInError;
-
-            setStep("verify");
-        } catch (err: any) {
-            setError(err.message || "Failed to send OTP. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleVerifyOtp = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError("");
-
-        if (!otp) {
-            setError("Please enter the OTP");
-            return;
-        }
-
-        setLoading(true);
-        try {
-            const phoneWithCode = loginMethod === 'phone' ? `+91${contact}` : contact;
-            const { error: verifyError } = loginMethod === "phone"
-                ? await supabase.auth.verifyOtp({ phone: phoneWithCode, token: otp, type: 'sms' })
-                : await supabase.auth.verifyOtp({ email: contact, token: otp, type: 'email' });
-
-            if (verifyError) throw verifyError;
 
             // Success! Redirect to dashboard with full reload
             window.location.href = "/dashboard";
         } catch (err: any) {
-            setError(err.message || "Invalid OTP. Please try again.");
+            setError(err.message || "Invalid login credentials. Please try again.");
         } finally {
             setLoading(false);
         }
@@ -99,96 +65,50 @@ export default function VendorLogin() {
                         </div>
                     )}
 
-                    {step === "request" ? (
-                        <form onSubmit={handleSendOtp} className="space-y-6">
-                            {/* Toggle login method */}
-                            <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                                <button
-                                    type="button"
-                                    onClick={() => setLoginMethod("phone")}
-                                    className={`flex-1 py-2 text-sm font-bold uppercase tracking-wider rounded-md transition-all ${loginMethod === 'phone' ? 'bg-white dark:bg-slate-900 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                                >
-                                    Mobile
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setLoginMethod("email")}
-                                    className={`flex-1 py-2 text-sm font-bold uppercase tracking-wider rounded-md transition-all ${loginMethod === 'email' ? 'bg-white dark:bg-slate-900 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                                >
-                                    Email
-                                </button>
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
+                                Email Address
+                            </label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-slate-900 dark:text-white disabled:opacity-50"
+                                    placeholder="partner@company.com"
+                                    disabled={loading}
+                                />
                             </div>
+                        </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
-                                    {loginMethod === 'phone' ? 'Mobile Number' : 'Email Address'}
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                                        {loginMethod === 'phone' ? <Phone className="h-5 w-5" /> : <Mail className="h-5 w-5" />}
-                                    </div>
-                                    <input
-                                        type={loginMethod === 'phone' ? 'tel' : 'email'}
-                                        value={contact}
-                                        onChange={(e) => setContact(e.target.value)}
-                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-slate-900 dark:text-white disabled:opacity-50"
-                                        placeholder={loginMethod === 'phone' ? "9876543210" : "partner@company.com"}
-                                        maxLength={loginMethod === 'phone' ? 10 : undefined}
-                                        disabled={loading}
-                                    />
-                                </div>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
+                                Password
+                            </label>
+                            <div className="relative">
+                                <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-slate-900 dark:text-white disabled:opacity-50"
+                                    placeholder="••••••••"
+                                    disabled={loading}
+                                />
                             </div>
+                        </div>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-primary hover:bg-orange-600 text-white font-black py-4 rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-[0.98] shadow-lg disabled:opacity-70 disabled:active:scale-100 uppercase tracking-widest text-sm"
-                            >
-                                {loading ? "Sending..." : "Send Security Code"}
-                                {!loading && <ArrowRight className="h-5 w-5" />}
-                            </button>
-                        </form>
-                    ) : (
-                        <form onSubmit={handleVerifyOtp} className="space-y-6">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
-                                    Security Code
-                                </label>
-                                <div className="relative">
-                                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
-                                    <input
-                                        type="text"
-                                        value={otp}
-                                        onChange={(e) => setOtp(e.target.value)}
-                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-10 pr-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-slate-900 dark:text-white tracking-widest font-black text-lg disabled:opacity-50"
-                                        placeholder="00000000"
-                                        maxLength={8}
-                                        disabled={loading}
-                                    />
-                                </div>
-                                <p className="text-xs text-slate-500 font-medium mt-3 text-center">
-                                    We sent a security code to <span className="font-bold text-slate-700 dark:text-slate-300">{contact}</span>
-                                </p>
-                            </div>
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 font-black py-4 rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-[0.98] shadow-lg disabled:opacity-70 disabled:active:scale-100 uppercase tracking-widest text-sm"
-                            >
-                                {loading ? "Verifying..." : "Verify & Login"}
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={() => setStep("request")}
-                                disabled={loading}
-                                className="w-full text-slate-500 hover:text-primary text-sm font-bold uppercase tracking-widest py-2 transition-colors"
-                            >
-                                Try another {loginMethod}
-                            </button>
-                        </form>
-                    )}
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full bg-primary hover:bg-orange-600 text-white font-black py-4 rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-[0.98] shadow-lg disabled:opacity-70 disabled:active:scale-100 uppercase tracking-widest text-sm"
+                        >
+                            {loading ? "Signing in..." : "Login to Dashboard"}
+                            {!loading && <ArrowRight className="h-5 w-5" />}
+                        </button>
+                    </form>
                 </div>
 
                 <div className="bg-slate-50 dark:bg-slate-800/50 p-6 border-t border-slate-200 dark:border-slate-800 flex items-center justify-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
