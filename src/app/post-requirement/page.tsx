@@ -75,7 +75,7 @@ function PostRequirementContent() {
 
         } catch (err: any) {
             console.error("Error submitting lead:", err);
-            setError("Failed to submit requirement. Please try again.");
+            setError(err.message || "Failed to submit requirement. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
