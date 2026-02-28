@@ -68,7 +68,7 @@ export default function PartnerProgram() {
                 .insert([
                     {
                         company_name: formData.companyName,
-                        full_name: formData.fullName,
+                        contact_name: formData.fullName,
                         email: formData.email,
                         mobile_number: formData.mobile,
                         equipment_types: formData.machineTypes,
