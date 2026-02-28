@@ -42,7 +42,18 @@ function PostRequirementContent() {
     const [error, setError] = useState("");
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        // Validation logic
+        if (name === "mobileNumber" && value.length > 10) return; // Max 10 digits
+        if (name === "mobileNumber" && value && !/^\d*$/.test(value)) return; // Only numeric
+
+        if (name === "pincode" && value.length > 6) return; // Max 6 digits for pincode
+        if (name === "pincode" && value && !/^\d*$/.test(value)) return; // Only numeric
+
+        if (name === "fullName" && value.length > 50) return;
+
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -182,8 +193,11 @@ function PostRequirementContent() {
                         <div>
                             <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-widest" htmlFor="mobileNumber">Mobile Number</label>
                             <div className="relative">
-                                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
-                                <input required value={formData.mobileNumber} onChange={handleChange} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-primary focus:border-primary pl-10 py-3 outline-none transition-colors" id="mobileNumber" name="mobileNumber" placeholder="+91 00000 00000" type="tel" />
+                                <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-slate-400">
+                                    <Phone className="h-5 w-5" />
+                                    <span className="font-bold border-r border-slate-300 dark:border-slate-600 pr-2">+91</span>
+                                </div>
+                                <input required value={formData.mobileNumber} onChange={handleChange} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-primary focus:border-primary pl-[84px] py-3 outline-none transition-colors" id="mobileNumber" name="mobileNumber" placeholder="98765 43210" type="tel" />
                             </div>
                         </div>
 
@@ -192,7 +206,7 @@ function PostRequirementContent() {
                             <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-widest" htmlFor="pincode">Project Pincode / Location</label>
                             <div className="relative">
                                 <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
-                                <input required value={formData.pincode} onChange={handleChange} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-primary focus:border-primary pl-10 py-3 outline-none transition-colors" id="pincode" name="pincode" placeholder="e.g. 400001 or Mumbai" type="text" />
+                                <input required value={formData.pincode} onChange={handleChange} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:ring-primary focus:border-primary pl-10 py-3 outline-none transition-colors" id="pincode" name="pincode" placeholder="e.g. 400001" type="text" />
                             </div>
                         </div>
 

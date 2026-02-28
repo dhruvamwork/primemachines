@@ -24,7 +24,19 @@ export default function PartnerProgram() {
     const [error, setError] = useState("");
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+
+        // Add number validation for mobile, pincode, years in business
+        if (name === "mobile" && value.length > 10) return;
+        if (name === "mobile" && value && !/^\d*$/.test(value)) return;
+
+        if (name === "pincode" && value.length > 6) return;
+        if (name === "pincode" && value && !/^\d*$/.test(value)) return;
+
+        if (name === "yearsInBusiness" && value.length > 2) return;
+        if (name === "yearsInBusiness" && value && !/^\d*$/.test(value)) return;
+
+        setFormData({ ...formData, [name]: value });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -153,8 +165,13 @@ export default function PartnerProgram() {
                                         <input name="fullName" value={formData.fullName} onChange={handleChange} required className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="Your full name" type="text" />
                                     </div>
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-semibold">Mobile Number (10 digits)</label>
-                                        <input name="mobile" value={formData.mobile} onChange={handleChange} className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="9876543210" type="tel" maxLength={10} required />
+                                        <label className="text-sm font-semibold">Mobile Number</label>
+                                        <div className="relative">
+                                            <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-slate-500">
+                                                <span className="font-bold border-r border-slate-300 dark:border-slate-600 pr-2">+91</span>
+                                            </div>
+                                            <input name="mobile" value={formData.mobile} onChange={handleChange} className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary pl-16 py-3" placeholder="9876543210" type="tel" maxLength={10} required />
+                                        </div>
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">Email Address</label>
