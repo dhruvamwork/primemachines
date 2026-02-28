@@ -47,7 +47,7 @@ export default function AdminLogin() {
         <div className="min-h-screen font-display bg-background-light dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col sm:justify-center items-center pt-8 sm:pt-0">
             <Link href="/" className="flex items-center gap-3 mb-8">
                 <div className="bg-primary p-3 rounded-xl shadow-lg shadow-primary/20">
-                    <span className="material-symbols-outlined text-white h-8 w-8 flex items-center justify-center" style={{ fontSize: '32px' }}>manufacturing</span>
+                    <HardHat className="text-white h-8 w-8" />
                 </div>
                 <div className="flex flex-col">
                     <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white uppercase italic leading-none">PRIME CONSTRUCTION</span>
