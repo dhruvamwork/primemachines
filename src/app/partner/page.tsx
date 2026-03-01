@@ -1,7 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
-import { HardHat, TrendingUp, ShieldCheck, CreditCard, Building2, Factory, Wrench, Mail, Phone, Menu, CheckCircle, AlertCircle } from "lucide-react";
+import { HardHat, TrendingUp, ShieldCheck, CreditCard, Building2, Factory, Wrench, Mail, Phone, Menu, CheckCircle, AlertCircle, ImagePlus, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default function PartnerProgram() {
@@ -23,6 +23,23 @@ export default function PartnerProgram() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState("");
+    const logoInputRef = useRef<HTMLInputElement>(null);
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [logoPreview, setLogoPreview] = useState<string | null>(null);
+
+    const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                setError("Logo file size must be under 2MB.");
+                return;
+            }
+            setLogoFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => setLogoPreview(reader.result as string);
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -62,6 +79,25 @@ export default function PartnerProgram() {
                 throw authError;
             }
 
+            // Upload logo if provided
+            let logoUrl = null;
+            if (logoFile) {
+                const ext = logoFile.name.split('.').pop();
+                const filePath = `vendor-logos/${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
+                const { data: logoUploadData, error: logoUploadError } = await supabase.storage
+                    .from('vendor-logos')
+                    .upload(filePath, logoFile);
+
+                if (logoUploadError) {
+                    console.error("Logo upload error:", logoUploadError);
+                } else {
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('vendor-logos')
+                        .getPublicUrl(logoUploadData.path);
+                    logoUrl = publicUrl;
+                }
+            }
+
             // 2. Insert application into `vendors` table
             const { error: insertError } = await supabase
                 .from('vendors')
@@ -76,6 +112,7 @@ export default function PartnerProgram() {
                         fleet_size: formData.fleetSize,
                         pincode: formData.pincode,
                         years_in_business: formData.yearsInBusiness,
+                        logo_url: logoUrl,
                         status: 'pending' // Admin still needs to approve them
                     }
                 ]);
@@ -171,6 +208,40 @@ export default function PartnerProgram() {
                             {/* Section 1: Company Details */}
                             <div className="space-y-6">
                                 <h4 className="text-lg font-bold border-b border-slate-200 dark:border-slate-800 pb-2 uppercase text-primary">1. Company & Contact Details</h4>
+
+                                {/* Logo Upload */}
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm font-semibold">Company Logo (Optional)</label>
+                                    <input
+                                        type="file"
+                                        ref={logoInputRef}
+                                        onChange={handleLogoChange}
+                                        accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                                        className="hidden"
+                                    />
+                                    {logoPreview ? (
+                                        <div className="relative w-32 h-32 rounded-xl overflow-hidden border-2 border-primary/30 shadow-md group">
+                                            <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-contain bg-white p-2" />
+                                            <button
+                                                type="button"
+                                                onClick={() => { setLogoFile(null); setLogoPreview(null); }}
+                                                className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full shadow-md hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                                            >
+                                                <X className="h-3 w-3" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            onClick={() => logoInputRef.current?.click()}
+                                            className="w-32 h-32 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                                        >
+                                            <ImagePlus className="h-8 w-8 text-slate-400 mb-1" />
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Upload Logo</span>
+                                        </div>
+                                    )}
+                                    <p className="text-[11px] text-slate-400 font-medium">JPG, PNG, WebP or SVG (Max 2MB)</p>
+                                </div>
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">Legal Entity / Company Name</label>
