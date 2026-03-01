@@ -19,17 +19,10 @@ export default function PartnerDashboard() {
             if (session?.user) {
                 setUser(session.user);
 
-                // Fetch vendor's machines
-                const { data: machineData } = await supabase
-                    .from('machines')
-                    .select('*')
-                    .eq('vendor_id', session.user.id)
-                    .order('created_at', { ascending: false });
-
-                if (machineData) setMachines(machineData);
-
-                // Try to fetch vendor profile using email or phone
+                // Try to fetch vendor profile using email or phone to get the correct vendor ID
                 const identifier = session.user.email || session.user.phone;
+                let vendorIdToUse = session.user.id;
+
                 if (identifier) {
                     const { data: vendorData } = await supabase
                         .from('vendors')
@@ -37,8 +30,20 @@ export default function PartnerDashboard() {
                         .or(`email.eq.${identifier},mobile_number.eq.${identifier}`)
                         .single();
 
-                    if (vendorData) setVendorProfile(vendorData);
+                    if (vendorData) {
+                        setVendorProfile(vendorData);
+                        vendorIdToUse = vendorData.id;
+                    }
                 }
+
+                // Fetch vendor's machines using the correct vendor table ID
+                const { data: machineData } = await supabase
+                    .from('machines')
+                    .select('*')
+                    .eq('vendor_id', vendorIdToUse)
+                    .order('created_at', { ascending: false });
+
+                if (machineData) setMachines(machineData);
             } else {
                 window.location.href = "/vendor-login";
                 return;

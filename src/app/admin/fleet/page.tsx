@@ -103,11 +103,7 @@ export default async function AdminFleetMatchmaker() {
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
                             {machines && machines.length > 0 ? (
                                 machines.map((machine) => {
-                                    // Parse images if needed
-                                    let imgUrl = "https://images.unsplash.com/photo-1541888086425-d81bb19240f5?w=400&q=80"; // Fallback
-                                    if (machine.image_urls && machine.image_urls.length > 0) {
-                                        imgUrl = machine.image_urls[0];
-                                    }
+                                    let imgUrl = machine.image || "https://images.unsplash.com/photo-1541888086425-d81bb19240f5?w=400&q=80"; // Fallback
 
                                     const vendorName = machine.vendors?.company_name || "Unknown Vendor";
                                     const vendorPhone = machine.vendors?.mobile_number || "-";
@@ -121,8 +117,8 @@ export default async function AdminFleetMatchmaker() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-5">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="size-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-20 w-24 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
                                                         <img className="w-full h-full object-cover" src={imgUrl} alt={machine.name} />
                                                     </div>
                                                     <div>

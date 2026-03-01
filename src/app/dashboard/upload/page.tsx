@@ -48,6 +48,16 @@ export default function UploadVehicle() {
                 return;
             }
 
+            // Fetch the actual vendor profile to get the table ID instead of the Auth ID
+            const identifier = user.email || user.phone;
+            const { data: vendorProfile } = await supabase
+                .from('vendors')
+                .select('id')
+                .or(`email.eq.${identifier},mobile_number.eq.${identifier}`)
+                .single();
+
+            const vendorIdToUse = vendorProfile ? vendorProfile.id : user.id;
+
             let imageUrl = "/images/placeholder-machine.jpg"; // Fallback
 
             // Upload image to Supabase Storage if one was selected
@@ -83,7 +93,7 @@ export default function UploadVehicle() {
                     price: parseInt(price) || 0,
                     location: location,
                     image: imageUrl,
-                    vendor_id: user.id,
+                    vendor_id: vendorIdToUse,
                     status: 'available'
                 }]);
 
