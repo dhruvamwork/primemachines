@@ -22,7 +22,7 @@ export default function PartnerDashboard() {
     const [machineEditForm, setMachineEditForm] = useState({
         name: '', category: 'Excavators', brand: '', registration_plate: '',
         mfg_year: '', price_hourly: '', price_daily: '', price_monthly: '',
-        operator_included: true, quantity: '1', description: '', location: ''
+        operator_included: true, quantity: '1', description: '', location: '', pincode: ''
     });
     const [savingMachine, setSavingMachine] = useState(false);
 
@@ -168,7 +168,8 @@ export default function PartnerDashboard() {
             operator_included: machine.operator_included !== false,
             quantity: (machine.quantity || 1).toString(),
             description: machine.description || '',
-            location: machine.location || machine.location_pincode || ''
+            location: machine.location || '',
+            pincode: machine.location_pincode || ''
         });
     };
 
@@ -193,7 +194,7 @@ export default function PartnerDashboard() {
                 quantity: parseInt(machineEditForm.quantity) || 1,
                 description: machineEditForm.description,
                 location: machineEditForm.location,
-                location_pincode: machineEditForm.location
+                location_pincode: machineEditForm.pincode
             })
             .eq('id', editingMachine.id);
 
@@ -532,14 +533,18 @@ export default function PartnerDashboard() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-4">
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Quantity</label>
                                     <input type="number" min="1" value={machineEditForm.quantity} onChange={e => setMachineEditForm({ ...machineEditForm, quantity: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold" placeholder="1" />
                                 </div>
                                 <div className="flex flex-col gap-1.5">
-                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Location / Pincode</label>
-                                    <input value={machineEditForm.location} onChange={e => setMachineEditForm({ ...machineEditForm, location: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-medium" placeholder="e.g. 400069" />
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Location</label>
+                                    <input value={machineEditForm.location} onChange={e => setMachineEditForm({ ...machineEditForm, location: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-medium" placeholder="e.g. Mumbai" />
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Pincode</label>
+                                    <input value={machineEditForm.pincode} onChange={e => { const v = e.target.value; if (v.length <= 6 && /^\d*$/.test(v)) setMachineEditForm({ ...machineEditForm, pincode: v }); }} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold" placeholder="400069" maxLength={6} />
                                 </div>
                             </div>
 
