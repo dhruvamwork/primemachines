@@ -77,6 +77,14 @@ export default function VendorProfilePage() {
     const companyName = vendor.company_name || "Unverified Partner";
     const gstNo = vendor.gst_number || "Pending Registration";
 
+    // Group machines by category
+    const groupedMachines = machines.reduce((acc: Record<string, any[]>, machine) => {
+        const cat = machine.category || 'Uncategorized';
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(machine);
+        return acc;
+    }, {});
+
     return (
         <div className="min-h-screen bg-[#EBEFF5] font-display text-slate-800 pb-20">
             {/* Header Banner Area */}
@@ -170,75 +178,102 @@ export default function VendorProfilePage() {
                 </div>
 
                 {/* Products Section */}
-                {machines.length > 0 ? (
-                    machines.map((machine, idx) => {
-                        const dayPrice = machine.price_per_day || 0;
-                        const hourPrice = dayPrice > 0 ? Math.round(dayPrice / 8) : 0;
-                        const monthPrice = dayPrice > 0 ? (dayPrice * 25) : 0;
-
+                {/* Products Section (Grouped by Category) */}
+                {Object.keys(groupedMachines).length > 0 ? (
+                    (Object.entries(groupedMachines) as [string, any[]][]).map(([categoryName, categoryMachines], idx) => {
                         return (
-                            <div key={machine.id} className="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200 relative pb-6">
+                            <div key={categoryName} className="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200 relative pb-6 mb-8">
 
                                 <div className="bg-[#FBBF24] px-6 py-3 w-fit rounded-br-xl shadow-sm border-b-2 border-amber-500/50 flex items-center gap-2">
-                                    <h2 className="text-amber-950 font-black text-sm sm:text-base uppercase tracking-widest">Product {idx + 1}: {machine.name}</h2>
+                                    <h2 className="text-amber-950 font-black text-sm sm:text-base uppercase tracking-widest">Product {idx + 1}: {categoryName}</h2>
+                                    <span className="bg-amber-950 text-[#FBBF24] text-xs px-2.5 py-1 rounded-full font-black tracking-widest ml-3">QTY: {categoryMachines.length}</span>
                                 </div>
 
-                                <div className="p-6 sm:p-8 flex flex-col lg:flex-row gap-8 lg:items-start pt-6">
-                                    <div className="flex-1 space-y-4 text-[13px] sm:text-[15px]">
-                                        <div className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 border-b border-slate-100 pb-2.5 items-center">
-                                            <span className="text-slate-800 font-black tracking-tight uppercase">Machine Time:</span>
-                                            <span className="text-slate-600 font-medium">8 Hours</span>
-                                        </div>
-                                        <div className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 border-b border-slate-100 pb-2.5 items-center">
-                                            <span className="text-slate-800 font-black tracking-tight uppercase">Service Spec:</span>
-                                            <span className="text-slate-600 font-medium">{machine.category || 'Excavation, Foundation, Road Work'}</span>
-                                        </div>
-                                        <div className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 border-b border-slate-100 pb-2.5 items-center">
-                                            <span className="text-slate-800 font-black tracking-tight uppercase">Brand:</span>
-                                            <span className="text-slate-700 uppercase font-bold">{machine.name.split(' ')[0] || 'Unknown'}</span>
-                                        </div>
-                                        <div className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 border-b border-slate-100 pb-2.5 items-center">
-                                            <span className="text-slate-800 font-black tracking-tight uppercase">Rent Basis:</span>
-                                            <span className="text-slate-600 font-medium">Hour / Day / Month</span>
-                                        </div>
+                                {/* Asset Sub-Table */}
+                                <div className="p-6 sm:p-8 pt-6">
+                                    <div className="overflow-x-auto rounded-xl border border-slate-200 hidden md:block shadow-sm">
+                                        <table className="w-full text-left border-collapse">
+                                            <thead>
+                                                <tr className="bg-slate-100 border-b-2 border-slate-200 text-[11px] uppercase tracking-widest text-slate-500">
+                                                    <th className="p-4 font-black">Vehicle No.</th>
+                                                    <th className="p-4 font-black">Brand</th>
+                                                    <th className="p-4 font-black text-center">Mfg Year (Life)</th>
+                                                    <th className="p-4 font-black text-right text-amber-600">Hour (₹)</th>
+                                                    <th className="p-4 font-black text-right text-amber-600">Day (₹)</th>
+                                                    <th className="p-4 font-black text-right text-amber-600">Month (₹)</th>
+                                                    <th className="p-4 font-black text-center">Operator</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100">
+                                                {categoryMachines.map((m: any) => {
+                                                    const hourly = m.price_hourly || Math.round((m.price_daily || m.price_per_day || m.price || 0) / 8);
+                                                    const daily = m.price_daily || m.price_per_day || m.price || 0;
+                                                    const monthly = m.price_monthly || ((m.price_daily || m.price_per_day || m.price || 0) * 25);
 
-                                        <div className="pt-2">
-                                            <h4 className="text-slate-800 font-black tracking-tight uppercase mb-1">Charges:</h4>
-                                            <p className="text-slate-500 text-xs sm:text-sm leading-relaxed">
-                                                Available for excavation, foundation, and road construction work. Serviced regularly to ensure zero downtime on site.
-                                            </p>
-                                        </div>
+                                                    return (
+                                                        <tr key={m.id} className="hover:bg-amber-50/30 transition-colors text-sm font-medium">
+                                                            <td className="p-4 font-black text-slate-800 uppercase tracking-widest text-[13px]">{m.registration_plate || m.name}</td>
+                                                            <td className="p-4 text-slate-600 uppercase font-bold text-[13px]">{m.brand || '---'}</td>
+                                                            <td className="p-4 text-center text-slate-600 font-bold">{m.mfg_year || '---'}</td>
+                                                            <td className="p-4 text-right font-black text-slate-800">{hourly > 0 ? hourly.toLocaleString('en-IN') : '--'}</td>
+                                                            <td className="p-4 text-right font-black text-amber-900 bg-amber-50/50">{daily > 0 ? daily.toLocaleString('en-IN') : '--'}</td>
+                                                            <td className="p-4 text-right font-black text-slate-800">{monthly > 0 ? monthly.toLocaleString('en-IN') : '--'}</td>
+                                                            <td className="p-4 text-center">
+                                                                {m.operator_included !== false ? (
+                                                                    <span className="inline-flex items-center gap-1 text-green-700 bg-green-100 px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest"><CheckSquare className="w-3 h-3" /> Yes</span>
+                                                                ) : (
+                                                                    <span className="inline-flex text-slate-500 bg-slate-100 px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest">No</span>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
                                     </div>
 
-                                    <div className="lg:w-[320px] shrink-0 flex flex-col gap-5">
-                                        {/* Pricing Grid */}
-                                        <div className="rounded-lg overflow-hidden border-2 border-[#FBBF24]">
-                                            <div className="grid grid-cols-3 bg-[#FBBF24] text-amber-950 font-black uppercase text-xs sm:text-sm tracking-wider text-center divide-x divide-amber-500/20">
-                                                <div className="py-2.5 px-1 shadow-inner">Hour</div>
-                                                <div className="py-2.5 px-1 shadow-inner">Day</div>
-                                                <div className="py-2.5 px-1 shadow-inner">Month</div>
-                                            </div>
-                                            <div className="grid grid-cols-3 bg-white text-slate-800 font-bold text-xs sm:text-[15px] text-center divide-x divide-slate-200">
-                                                <div className="py-3 px-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1">
-                                                    <span className="text-slate-400 font-medium text-[10px] sm:text-xs">₹</span>{hourPrice > 0 ? hourPrice.toLocaleString('en-IN') : '--'}
-                                                </div>
-                                                <div className="py-3 px-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 bg-slate-50">
-                                                    <span className="text-slate-400 font-medium text-[10px] sm:text-xs">₹</span>{dayPrice > 0 ? dayPrice.toLocaleString('en-IN') : '--'}
-                                                </div>
-                                                <div className="py-3 px-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1">
-                                                    <span className="text-slate-400 font-medium text-[10px] sm:text-xs">₹</span>{monthPrice > 0 ? monthPrice.toLocaleString('en-IN') : '--'}
-                                                </div>
-                                            </div>
-                                        </div>
+                                    {/* Mobile Cards View */}
+                                    <div className="flex flex-col gap-4 md:hidden">
+                                        {categoryMachines.map((m: any) => {
+                                            const hourly = m.price_hourly || Math.round((m.price_daily || m.price_per_day || m.price || 0) / 8);
+                                            const daily = m.price_daily || m.price_per_day || m.price || 0;
+                                            const monthly = m.price_monthly || ((m.price_daily || m.price_per_day || m.price || 0) * 25);
 
-                                        <div className="bg-white rounded-lg p-3">
-                                            <div className="flex items-center gap-2 mb-1.5">
-                                                <CheckSquare className="text-[#F59E0B] w-5 h-5 fill-amber-100" />
-                                                <span className="font-bold text-slate-900 text-sm tracking-wide">Operator Included: Yes</span>
-                                            </div>
-                                            <p className="text-slate-500 text-[11px] sm:text-xs font-medium leading-relaxed">Fast service with an experienced operator, available in your local area.</p>
-                                        </div>
+                                            return (
+                                                <div key={m.id} className="border border-slate-200 rounded-xl p-4 bg-slate-50/50 space-y-3 shadow-sm">
+                                                    <div className="flex justify-between items-start border-b border-slate-200 pb-3">
+                                                        <div>
+                                                            <span className="text-[10px] font-black text-slate-400 block uppercase tracking-widest mb-0.5">Vehicle No.</span>
+                                                            <span className="font-black text-slate-800 uppercase tracking-widest text-[13px]">{m.registration_plate || m.name}</span>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <span className="text-[10px] font-black text-slate-400 block uppercase tracking-widest mb-0.5">Brand</span>
+                                                            <span className="font-bold text-slate-700 uppercase text-[13px]">{m.brand || '---'}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                                        <div><span className="text-slate-500 font-medium">Life (Year):</span> <span className="font-bold">{m.mfg_year || '---'}</span></div>
+                                                        <div className="text-right"><span className="text-slate-500 font-medium">Operator:</span> <span className="font-bold">{m.operator_included !== false ? 'Yes' : 'No'}</span></div>
+                                                    </div>
+                                                    <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-200 text-center bg-white rounded-lg border border-slate-100 p-2.5 shadow-inner">
+                                                        <div className="flex flex-col justify-center">
+                                                            <span className="text-[9px] uppercase font-black text-slate-400 block pb-1 tracking-widest">Hour</span>
+                                                            <span className="font-black text-slate-700 text-xs">₹ {hourly > 0 ? hourly.toLocaleString('en-IN') : '--'}</span>
+                                                        </div>
+                                                        <div className="border-x border-amber-200 px-1 bg-amber-50 rounded flex flex-col justify-center py-1">
+                                                            <span className="text-[9px] uppercase font-black text-amber-600 block pb-1 tracking-widest">Day</span>
+                                                            <span className="font-black text-amber-900 text-[13px]">₹ {daily > 0 ? daily.toLocaleString('en-IN') : '--'}</span>
+                                                        </div>
+                                                        <div className="flex flex-col justify-center">
+                                                            <span className="text-[9px] uppercase font-black text-slate-400 block pb-1 tracking-widest">Month</span>
+                                                            <span className="font-black text-slate-700 text-xs">₹ {monthly > 0 ? monthly.toLocaleString('en-IN') : '--'}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
+
                                 </div>
                             </div>
                         )
