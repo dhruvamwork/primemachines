@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { HardHat, LogOut, Plus, Package, Activity, AlertCircle, Trash2, MapPin, IndianRupee } from "lucide-react";
+import { HardHat, LogOut, Plus, Package, Activity, AlertCircle, Trash2, MapPin, IndianRupee, ImagePlus, Upload } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
@@ -14,6 +14,8 @@ export default function PartnerDashboard() {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [editForm, setEditForm] = useState({ company_name: '', full_name: '', mobile: '', pincode: '' });
     const [savingProfile, setSavingProfile] = useState(false);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -41,6 +43,7 @@ export default function PartnerDashboard() {
                             mobile: vendorData.mobile || vendorData.mobile_number || '',
                             pincode: vendorData.pincode || ''
                         });
+                        setImagePreview(vendorData.profile_image || null);
                         vendorIdToUse = vendorData.id;
                     }
                 }
@@ -84,6 +87,27 @@ export default function PartnerDashboard() {
         e.preventDefault();
         setSavingProfile(true);
 
+        let finalImageUrl = vendorProfile.profile_image;
+
+        if (imageFile) {
+            const fileExt = imageFile.name.split('.').pop();
+            const fileName = `vendor-profiles/${vendorProfile.id}-${Date.now()}.${fileExt}`;
+
+            const { data: uploadData, error: uploadError } = await supabase.storage
+                .from('machine-images')
+                .upload(fileName, imageFile, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
+            if (!uploadError) {
+                const { data: { publicUrl } } = supabase.storage
+                    .from('machine-images')
+                    .getPublicUrl(uploadData.path);
+                finalImageUrl = publicUrl;
+            }
+        }
+
         const { error } = await supabase
             .from('vendors')
             .update({
@@ -92,17 +116,33 @@ export default function PartnerDashboard() {
                 full_name: editForm.full_name,
                 mobile: editForm.mobile,
                 mobile_number: editForm.mobile,
-                pincode: editForm.pincode
+                pincode: editForm.pincode,
+                profile_image: finalImageUrl
             })
             .eq('id', vendorProfile.id);
 
         if (!error) {
-            setVendorProfile({ ...vendorProfile, ...editForm, contact_name: editForm.full_name, mobile_number: editForm.mobile });
+            setVendorProfile({
+                ...vendorProfile,
+                ...editForm,
+                contact_name: editForm.full_name,
+                mobile_number: editForm.mobile,
+                profile_image: finalImageUrl
+            });
             setIsEditingProfile(false);
         } else {
-            alert("Failed to update profile");
+            console.error("Profile update error:", error);
+            alert("Failed to update profile. Make sure the 'profile_image' column exists in your vendors table.");
         }
         setSavingProfile(false);
+    };
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
     };
 
     if (loading) {
@@ -136,8 +176,12 @@ export default function PartnerDashboard() {
                                         <span className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">{vendorProfile.company_name || 'Partner Account'}</span>
                                         <span className="text-xs text-slate-500 font-medium">{vendorProfile.email}</span>
                                     </div>
-                                    <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black uppercase tracking-widest border border-primary/20 shadow-sm group-hover:scale-105 transition-transform">
-                                        {vendorProfile.company_name ? vendorProfile.company_name.substring(0, 2) : 'PR'}
+                                    <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black uppercase tracking-widest border border-primary/20 shadow-sm group-hover:scale-105 transition-transform overflow-hidden">
+                                        {vendorProfile.profile_image ? (
+                                            <img src={vendorProfile.profile_image} alt={vendorProfile.company_name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            vendorProfile.company_name ? vendorProfile.company_name.substring(0, 2) : 'PR'
+                                        )}
                                     </div>
                                 </button>
                             )}
@@ -182,8 +226,12 @@ export default function PartnerDashboard() {
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none"></div>
                         <div className="flex items-center gap-5 z-10 w-full sm:w-auto">
-                            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-gradient-to-br from-primary to-orange-600 text-white flex items-center justify-center font-black text-2xl uppercase tracking-widest shadow-lg shadow-primary/30 shrink-0">
-                                {vendorProfile.company_name ? vendorProfile.company_name.substring(0, 2) : 'PR'}
+                            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-gradient-to-br from-primary to-orange-600 text-white flex items-center justify-center font-black text-2xl uppercase tracking-widest shadow-lg shadow-primary/30 shrink-0 overflow-hidden">
+                                {vendorProfile.profile_image ? (
+                                    <img src={vendorProfile.profile_image} alt={vendorProfile.company_name} className="w-full h-full object-cover" />
+                                ) : (
+                                    vendorProfile.company_name ? vendorProfile.company_name.substring(0, 2) : 'PR'
+                                )}
                             </div>
                             <div className="flex-1 min-w-0 flex flex-col gap-1">
                                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight truncate">{vendorProfile.company_name || 'Setup your profile'}</h2>
@@ -308,6 +356,22 @@ export default function PartnerDashboard() {
                             </button>
                         </div>
                         <form onSubmit={handleUpdateProfile} className="p-6 flex flex-col gap-5">
+                            {/* Profile Image Upload */}
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="h-24 w-24 rounded-full bg-slate-100 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center overflow-hidden relative group cursor-pointer" onClick={() => document.getElementById('profileImageInput')?.click()}>
+                                    {imagePreview ? (
+                                        <img src={imagePreview} alt="Profile Preview" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <ImagePlus className="h-8 w-8 text-slate-400 group-hover:text-primary transition-colors" />
+                                    )}
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Upload className="h-6 w-6 text-white" />
+                                    </div>
+                                </div>
+                                <input id="profileImageInput" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Upload Logo/Photo</span>
+                            </div>
+
                             <div className="flex flex-col gap-2">
                                 <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Company Name</label>
                                 <input required value={editForm.company_name} onChange={e => setEditForm({ ...editForm, company_name: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-medium text-sm text-slate-900 dark:text-white" />
