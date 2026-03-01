@@ -101,7 +101,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-slate-900">
           <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-900/70 to-slate-900/30 z-10"></div>
           <img
-            src="https://images.unsplash.com/photo-1541888086425-d81bb19240f5?q=80&w=2670&auto=format&fit=crop"
+            src="/images/login_bg.png"
             alt="Prime Construction Machinery"
             className="w-full h-full object-cover scale-105 opacity-50"
           />
