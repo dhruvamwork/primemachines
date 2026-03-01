@@ -97,16 +97,14 @@ export default function Home() {
 
       {/* Full-Screen Split Lead-Capture Hero Section */}
       <section className="relative min-h-screen w-full flex items-center justify-center pt-24 pb-12 overflow-hidden bg-slate-900">
-        {/* Active Video Background */}
-        <div className="absolute inset-0 bg-background-dark">
-          <div className="absolute inset-0 hero-video-overlay z-10 opacity-80 backdrop-blur-[2px]"></div>
-          <video
-            autoPlay loop muted playsInline
-            className="w-full h-full object-cover scale-110 opacity-40 mix-blend-luminosity"
-            poster="https://lh3.googleusercontent.com/aida-public/AB6AXuCbzhXb3t3bOHGfSPO5EUJVi5cAheY95Ql3MOSnXKmF4lpgT0MKxMXGvlRbK6YuXpGzLlhwng7P-b-rO48zsxhY7I9uj1qR8EFOumglDPNr8Ch7FM6SzoeWTywH1-fhzMS6B37bn383i-W-cUrkkl8ph_gQUuuMq0K_Ms84nbdVFnyOegOkH8_tZIAnT2c-20GujsxWkNxUPh-sZPKlS0TP2m_aV16MeDj5892Zp1Gsk-NnOGSS1xYBq1ZO-FiBxuLOhBBjKXb39yEE"
-          >
-            <source src="https://videos.pexels.com/video-files/3201594/3201594-uhd_2560_1440_25fps.mp4" type="video/mp4" />
-          </video>
+        {/* Active Background */}
+        <div className="absolute inset-0 bg-slate-900">
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-900/70 to-slate-900/30 z-10"></div>
+          <img
+            src="https://images.unsplash.com/photo-1541888086425-d81bb19240f5?q=80&w=2670&auto=format&fit=crop"
+            alt="Prime Construction Machinery"
+            className="w-full h-full object-cover scale-105 opacity-50"
+          />
         </div>
 
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 w-full flex flex-col lg:flex-row items-center gap-12 lg:gap-20 py-10">
