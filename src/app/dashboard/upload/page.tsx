@@ -26,6 +26,7 @@ export default function UploadVehicle() {
     const [quantity, setQuantity] = useState("1");
     const [description, setDescription] = useState("");
     const [location, setLocation] = useState("");
+    const [pincode, setPincode] = useState("");
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -109,7 +110,7 @@ export default function UploadVehicle() {
                     quantity: parseInt(quantity) || 1,
                     description: description,
                     location: location,
-                    location_pincode: location,
+                    location_pincode: pincode,
                     image: imageUrl,
                     vendor_id: vendorIdToUse,
                     status: 'available'
@@ -331,15 +332,31 @@ export default function UploadVehicle() {
                             />
                         </div>
 
-                        <div className="md:col-span-2 lg:col-span-2">
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Current Location / Pincode</label>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Current Location</label>
                             <input
                                 required
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
                                 type="text"
                                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
-                                placeholder="e.g. Andheri East, Mumbai 400069"
+                                placeholder="e.g. Andheri East, Mumbai"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Pincode</label>
+                            <input
+                                required
+                                value={pincode}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val.length <= 6 && /^\d*$/.test(val)) setPincode(val);
+                                }}
+                                type="text"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold"
+                                placeholder="e.g. 400069"
+                                maxLength={6}
                             />
                         </div>
 
