@@ -280,7 +280,7 @@ export default function Home() {
             ].map((ind, idx) => (
               <div key={idx} className="group relative h-80 rounded-2xl overflow-hidden shadow-2xl">
                 <div className="absolute inset-0 bg-slate-800" />
-                <img src={ind.img} alt={ind.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-60 mix-blend-luminosity hover:mix-blend-normal" />
+                <img src={ind.img} alt={ind.title} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-transparent z-10 pointer-events-none"></div>
                 <div className="absolute bottom-6 left-6 z-20">
                   {ind.icon}
