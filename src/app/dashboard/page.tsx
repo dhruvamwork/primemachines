@@ -193,8 +193,7 @@ export default function PartnerDashboard() {
                 operator_included: machineEditForm.operator_included,
                 quantity: parseInt(machineEditForm.quantity) || 1,
                 description: machineEditForm.description,
-                location: machineEditForm.location,
-                location_pincode: machineEditForm.pincode
+                location: machineEditForm.pincode ? `${machineEditForm.location} - ${machineEditForm.pincode}` : machineEditForm.location
             })
             .eq('id', editingMachine.id);
 

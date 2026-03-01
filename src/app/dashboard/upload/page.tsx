@@ -109,8 +109,7 @@ export default function UploadVehicle() {
                     operator_included: operatorIncluded,
                     quantity: parseInt(quantity) || 1,
                     description: description,
-                    location: location,
-                    location_pincode: pincode,
+                    location: pincode ? `${location} - ${pincode}` : location,
                     image: imageUrl,
                     vendor_id: vendorIdToUse,
                     status: 'available'
