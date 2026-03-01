@@ -1,69 +1,328 @@
-import Link from "next/link";
-import { HardHat, ShieldCheck, MapPin, Star } from "lucide-react";
+"use client";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { MapPin, Phone, Mail, FileText, CheckSquare, MessageSquare, Package } from "lucide-react";
 
-export default function VendorProfile({ params }: { params: { id: string } }) {
-    // Dummy vendor profile data
-    const vendorId = params.id;
-    const vendorName = vendorId === "vnd-1" ? "InfraCorp Rentals" : vendorId === "vnd-2" ? "Apex Heavy Machinery" : "BuildTech Solvers";
-    const initial = vendorName.substring(0, 2).toUpperCase();
+export default function VendorProfilePage() {
+    const params = useParams();
+    const vendorId = params.id as string;
+
+    const [vendor, setVendor] = useState<any>(null);
+    const [machines, setMachines] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const [formState, setFormState] = useState({ name: "", mobile: "", requirement: "" });
+    const [submitting, setSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+
+    useEffect(() => {
+        if (!vendorId) return;
+        const fetchData = async () => {
+            setLoading(true);
+            const { data: vData } = await supabase.from('vendors').select('*').eq('id', vendorId).single();
+            if (vData) {
+                setVendor(vData);
+                const { data: mData } = await supabase.from('machines').select('*').eq('vendor_id', vendorId);
+                if (mData) {
+                    setMachines(mData);
+                }
+            }
+            setLoading(false);
+        };
+        fetchData();
+    }, [vendorId]);
+
+    const handleInquirySubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+        const requirementText = `[Vendor Profile Lead] Inquiry for Vendor: ${vendor?.company_name || vendor?.full_name}\n\nClient Need: ${formState.requirement}`;
+
+        const { error } = await supabase.from('leads').insert([{
+            customer_name: formState.name,
+            customer_phone: formState.mobile,
+            location_pincode: vendor?.pincode || "000000",
+            requirement_details: requirementText,
+            status: 'new'
+        }]);
+
+        if (!error) {
+            setSubmitted(true);
+            setFormState({ name: "", mobile: "", requirement: "" });
+        } else {
+            alert("Failed to send inquiry. Please try again.");
+        }
+        setSubmitting(false);
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-[#F0F4F8] flex items-center justify-center font-display">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#EAB308]"></div>
+            </div>
+        );
+    }
+
+    if (!vendor) {
+        return (
+            <div className="min-h-screen bg-[#F0F4F8] flex items-center justify-center font-display p-6 text-center">
+                <div className="bg-white p-8 rounded-2xl shadow-sm">
+                    <h1 className="text-2xl font-bold text-slate-800 mb-2">Vendor Not Found</h1>
+                    <p className="text-slate-500">The profile you are looking for does not exist or has been removed.</p>
+                </div>
+            </div>
+        );
+    }
+
+    const companyName = vendor.company_name || "Unverified Partner";
+    const gstNo = vendor.gst_number || "Pending Registration";
 
     return (
-        <div className="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 antialiased min-h-screen">
-            {/* Simple Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-primary/10 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex h-16 items-center justify-between">
-                        <Link href="/" className="flex items-center gap-2">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white">
-                                <HardHat className="h-6 w-6" />
+        <div className="min-h-screen bg-[#EBEFF5] font-display text-slate-800 pb-20">
+            {/* Header Banner Area */}
+            <div className="relative h-[220px] sm:h-[280px] bg-slate-900 overflow-hidden shadow-lg">
+                <img src="/images/login_bg.png" alt="Header Background" className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity brightness-75" />
+                <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-transparent"></div>
+
+                <div className="absolute top-0 left-0 w-full p-6 sm:p-10 flex flex-col md:flex-row justify-between items-start md:items-center z-10 max-w-6xl mx-auto right-0 gap-6">
+                    <div className="flex flex-col text-white max-w-xl">
+                        <h1 className="text-[#FDE68A] font-black uppercase tracking-widest text-lg sm:text-2xl drop-shadow-md pb-1">PRIME CONSTRUCTION MACHINE</h1>
+                        <p className="text-xs sm:text-sm font-bold tracking-widest drop-shadow-md text-white/80">CONSTRUCTION EQUIPMENT ON RENT</p>
+
+                        <div className="mt-8 sm:mt-12 flex items-center">
+                            <span className="text-2xl sm:text-5xl font-black uppercase italic drop-shadow-lg text-white">Vendor Profile</span>
+                        </div>
+                    </div>
+
+                    <a
+                        href={`https://wa.me/919057221351?text=Hi,%20I%20am%20interested%20in%20equipment%20from%20vendor%20${companyName}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="bg-[#25D366] hover:bg-[#1DA851] text-white px-5 py-2.5 rounded-full font-bold text-sm sm:text-base flex items-center gap-2 shadow-xl shadow-green-900/20 transition-transform hover:scale-105 active:scale-95 whitespace-nowrap mt-4 md:mt-0"
+                    >
+                        <MessageSquare className="w-5 h-5 fill-current" />
+                        Book on WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 -mt-10 sm:-mt-16 relative z-20 space-y-8">
+
+                {/* Company Information Card */}
+                <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200">
+                    <div className="bg-[#FBBF24] px-6 py-3 flex items-center gap-2 w-fit rounded-br-xl shadow-sm border-b-2 border-amber-500/50">
+                        <FileText className="text-amber-900 w-5 h-5" />
+                        <h2 className="text-amber-950 font-black text-sm sm:text-base uppercase tracking-widest">Company Information</h2>
+                    </div>
+
+                    <div className="p-6 sm:p-8 flex flex-col md:flex-row gap-8 items-stretch justify-start">
+                        {/* Image / Logo */}
+                        <div className="w-full md:w-[280px] aspect-video sm:aspect-[4/3] shrink-0 bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200 shadow-inner">
+                            {vendor.profile_image ? (
+                                <img src={vendor.profile_image} alt={companyName} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-300">
+                                    <Package className="w-12 h-12 mb-2 opacity-50" />
+                                    <span className="text-xs font-bold uppercase tracking-widest">No Image</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Details */}
+                        <div className="w-full flex-1 flex flex-col gap-4 text-sm sm:text-[15px] font-medium justify-center pb-2">
+                            <div className="flex gap-4 items-center border-b border-slate-100 pb-3">
+                                <FileText className="w-5 h-5 text-amber-600 shrink-0" />
+                                <div className="flex w-full justify-between items-center gap-2">
+                                    <span className="text-slate-600 font-bold min-w-[80px]">GST No:</span>
+                                    <span className="text-slate-800 uppercase tracking-widest font-bold text-right">{gstNo}</span>
+                                </div>
                             </div>
-                            <span className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white uppercase">Prime Construction <span className="text-primary">Machines</span></span>
-                        </Link>
-                        <Link className="px-4 py-2 text-sm font-bold bg-primary text-white rounded-xl" href="/fleet">Back to Fleet</Link>
+                            <div className="flex gap-4 items-center border-b border-slate-100 pb-3">
+                                <Phone className="w-5 h-5 text-amber-600 shrink-0" />
+                                <div className="flex w-full justify-between items-center gap-2">
+                                    <span className="text-slate-600 font-bold min-w-[80px]">Mobile:</span>
+                                    <span className="text-[#B45309] font-black tracking-widest text-right">{vendor.mobile_number || vendor.mobile || '+91 -'}</span>
+                                </div>
+                            </div>
+                            <div className="flex gap-4 items-center border-b border-slate-100 pb-3">
+                                <Mail className="w-5 h-5 text-amber-600 shrink-0" />
+                                <div className="flex w-full justify-between items-center gap-2 shadow-sm relative">
+                                    <span className="text-slate-600 font-bold min-w-[80px]">Email:</span>
+                                    <span className="text-slate-800 truncate text-right">{vendor.email || 'Not provided'}</span>
+                                </div>
+                            </div>
+                            <div className="flex gap-4 items-center border-b border-slate-100 pb-3">
+                                <MapPin className="w-5 h-5 text-amber-600 shrink-0" />
+                                <div className="flex w-full justify-between items-center gap-2">
+                                    <span className="text-slate-600 font-bold min-w-[80px]">Location:</span>
+                                    <span className="text-slate-800 capitalize text-right">{vendor.city ? vendor.city + ', ' + vendor.state : (vendor.pincode ? `Area Code ${vendor.pincode}` : 'Not Specified')}</span>
+                                </div>
+                            </div>
+                            <div className="flex gap-4 items-center">
+                                <FileText className="w-5 h-5 text-amber-600 shrink-0" />
+                                <div className="flex w-full justify-between items-center gap-2">
+                                    <span className="text-slate-600 font-bold min-w-[80px]">Pincode:</span>
+                                    <span className="text-slate-800 font-bold tracking-widest text-right">{vendor.pincode || '----'}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </header>
 
-            <main className="max-w-3xl mx-auto px-4 py-12">
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm">
-                    <div className="flex items-start gap-6 border-b border-slate-100 dark:border-slate-800 pb-8 mb-8">
-                        <div className="h-24 w-24 rounded-2xl bg-primary/20 text-primary flex items-center justify-center font-black text-3xl shrink-0">
-                            {initial}
+                {/* Products Section */}
+                {machines.length > 0 ? (
+                    machines.map((machine, idx) => {
+                        const dayPrice = machine.price_per_day || 0;
+                        const hourPrice = dayPrice > 0 ? Math.round(dayPrice / 8) : 0;
+                        const monthPrice = dayPrice > 0 ? (dayPrice * 25) : 0;
+
+                        return (
+                            <div key={machine.id} className="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200 relative pb-6">
+
+                                <div className="bg-[#FBBF24] px-6 py-3 w-fit rounded-br-xl shadow-sm border-b-2 border-amber-500/50 flex items-center gap-2">
+                                    <h2 className="text-amber-950 font-black text-sm sm:text-base uppercase tracking-widest">Product {idx + 1}: {machine.name}</h2>
+                                </div>
+
+                                <div className="p-6 sm:p-8 flex flex-col lg:flex-row gap-8 lg:items-start pt-6">
+                                    <div className="flex-1 space-y-4 text-[13px] sm:text-[15px]">
+                                        <div className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 border-b border-slate-100 pb-2.5 items-center">
+                                            <span className="text-slate-800 font-black tracking-tight uppercase">Machine Time:</span>
+                                            <span className="text-slate-600 font-medium">8 Hours</span>
+                                        </div>
+                                        <div className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 border-b border-slate-100 pb-2.5 items-center">
+                                            <span className="text-slate-800 font-black tracking-tight uppercase">Service Spec:</span>
+                                            <span className="text-slate-600 font-medium">{machine.category || 'Excavation, Foundation, Road Work'}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 border-b border-slate-100 pb-2.5 items-center">
+                                            <span className="text-slate-800 font-black tracking-tight uppercase">Brand:</span>
+                                            <span className="text-slate-700 uppercase font-bold">{machine.name.split(' ')[0] || 'Unknown'}</span>
+                                        </div>
+                                        <div className="grid grid-cols-[140px_1fr] sm:grid-cols-[160px_1fr] gap-4 border-b border-slate-100 pb-2.5 items-center">
+                                            <span className="text-slate-800 font-black tracking-tight uppercase">Rent Basis:</span>
+                                            <span className="text-slate-600 font-medium">Hour / Day / Month</span>
+                                        </div>
+
+                                        <div className="pt-2">
+                                            <h4 className="text-slate-800 font-black tracking-tight uppercase mb-1">Charges:</h4>
+                                            <p className="text-slate-500 text-xs sm:text-sm leading-relaxed">
+                                                Available for excavation, foundation, and road construction work. Serviced regularly to ensure zero downtime on site.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="lg:w-[320px] shrink-0 flex flex-col gap-5">
+                                        {/* Pricing Grid */}
+                                        <div className="rounded-lg overflow-hidden border-2 border-[#FBBF24]">
+                                            <div className="grid grid-cols-3 bg-[#FBBF24] text-amber-950 font-black uppercase text-xs sm:text-sm tracking-wider text-center divide-x divide-amber-500/20">
+                                                <div className="py-2.5 px-1 shadow-inner">Hour</div>
+                                                <div className="py-2.5 px-1 shadow-inner">Day</div>
+                                                <div className="py-2.5 px-1 shadow-inner">Month</div>
+                                            </div>
+                                            <div className="grid grid-cols-3 bg-white text-slate-800 font-bold text-xs sm:text-[15px] text-center divide-x divide-slate-200">
+                                                <div className="py-3 px-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1">
+                                                    <span className="text-slate-400 font-medium text-[10px] sm:text-xs">₹</span>{hourPrice > 0 ? hourPrice.toLocaleString('en-IN') : '--'}
+                                                </div>
+                                                <div className="py-3 px-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1 bg-slate-50">
+                                                    <span className="text-slate-400 font-medium text-[10px] sm:text-xs">₹</span>{dayPrice > 0 ? dayPrice.toLocaleString('en-IN') : '--'}
+                                                </div>
+                                                <div className="py-3 px-1 flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1">
+                                                    <span className="text-slate-400 font-medium text-[10px] sm:text-xs">₹</span>{monthPrice > 0 ? monthPrice.toLocaleString('en-IN') : '--'}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-white rounded-lg p-3">
+                                            <div className="flex items-center gap-2 mb-1.5">
+                                                <CheckSquare className="text-[#F59E0B] w-5 h-5 fill-amber-100" />
+                                                <span className="font-bold text-slate-900 text-sm tracking-wide">Operator Included: Yes</span>
+                                            </div>
+                                            <p className="text-slate-500 text-[11px] sm:text-xs font-medium leading-relaxed">Fast service with an experienced operator, available in your local area.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    })
+                ) : (
+                    <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200 p-10 text-center">
+                        <Package className="w-16 h-16 text-slate-200 mx-auto mb-4" />
+                        <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">No Products Listed</h3>
+                        <p className="text-slate-500 font-medium mt-2">This vendor has not published any equipment catalog yet.</p>
+                    </div>
+                )}
+
+                {/* Inquiry Form Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-2 pb-16">
+                    <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200 relative">
+                        <div className="bg-slate-100 text-slate-500 px-6 py-3 w-fit rounded-br-xl border-b-2 border-slate-200 flex items-center gap-2">
+                            <h2 className="font-black text-sm sm:text-base uppercase tracking-widest">Product {machines.length + 1}: Coming Soon</h2>
                         </div>
-                        <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                                <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">{vendorName}</h1>
-                                <ShieldCheck className="text-green-500 h-6 w-6" />
-                            </div>
-                            <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Verified Equipment Partner</p>
-                            <div className="flex items-center gap-4 text-sm font-medium text-slate-600 dark:text-slate-400">
-                                <div className="flex items-center gap-1"><MapPin className="h-4 w-4 text-primary" /> Mumbai, MH</div>
-                                <div className="flex items-center gap-1"><Star className="h-4 w-4 text-yellow-500" /> 4.9/5 Rating</div>
-                            </div>
+                        <div className="p-8 text-center flex flex-col items-center justify-center h-[calc(100%-50px)] min-h-[150px]">
+                            <span className="text-slate-400/80 font-bold uppercase tracking-widest text-sm">Details Coming Soon...</span>
                         </div>
                     </div>
 
-                    <div className="space-y-6">
-                        <div>
-                            <h2 className="text-xl font-bold mb-3 text-slate-900 dark:text-white">About {vendorName}</h2>
-                            <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                A premier partner providing top-tier industrial construction machinery.
-                                Serving the industry with a commitment to quality, on-time delivery, and fully verified operators.
-                            </p>
+                    <div className="bg-white rounded-xl shadow-xl overflow-hidden border border-slate-200">
+                        <div className="bg-[#FBBF24] px-6 py-3 w-fit rounded-br-xl shadow-sm border-b-2 border-amber-500/50 flex items-center gap-2 mb-4">
+                            <h2 className="text-amber-950 font-black text-sm sm:text-base uppercase tracking-widest">Inquiry Form</h2>
                         </div>
+                        <div className="px-6 pb-6 pt-2">
+                            {submitted ? (
+                                <div className="bg-green-50 border border-green-200 p-8 rounded-xl text-center flex flex-col items-center justify-center h-full min-h-[220px]">
+                                    <div className="w-14 h-14 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-4">
+                                        <CheckSquare className="w-8 h-8" />
+                                    </div>
+                                    <h4 className="text-lg font-black text-green-900 mb-2 uppercase tracking-wide">Inquiry Sent Successfully!</h4>
+                                    <p className="text-sm text-green-700 font-medium mb-6">We have received your requirement. The broker team will contact you shortly.</p>
+                                    <button onClick={() => setSubmitted(false)} className="px-4 py-2 border-2 border-green-600 text-xs font-bold uppercase tracking-widest text-green-700 hover:bg-green-600 hover:text-white rounded-lg transition-colors">Send Another</button>
+                                </div>
+                            ) : (
+                                <form onSubmit={handleInquirySubmit} className="space-y-3.5">
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Your Name"
+                                        value={formState.name}
+                                        onChange={e => setFormState({ ...formState, name: e.target.value })}
+                                        className="w-full bg-slate-50 border border-slate-200 p-3.5 text-slate-800 rounded-lg text-sm font-medium focus:ring-2 focus:ring-[#FBBF24] focus:border-transparent outline-none transition-shadow placeholder:text-slate-400"
+                                    />
+                                    <input
+                                        type="tel"
+                                        required
+                                        placeholder="Mobile Number"
+                                        maxLength={10}
+                                        value={formState.mobile}
+                                        onChange={e => {
+                                            if (!/^\d*$/.test(e.target.value)) return;
+                                            setFormState({ ...formState, mobile: e.target.value })
+                                        }}
+                                        className="w-full bg-slate-50 border border-slate-200 p-3.5 text-slate-800 rounded-lg text-sm font-bold tracking-widest focus:ring-2 focus:ring-[#FBBF24] focus:border-transparent outline-none transition-shadow placeholder:text-slate-400"
+                                    />
+                                    <textarea
+                                        required
+                                        placeholder="Your Requirement (e.g., specific dates, exact machine)"
+                                        rows={2}
+                                        value={formState.requirement}
+                                        onChange={e => setFormState({ ...formState, requirement: e.target.value })}
+                                        className="w-full bg-slate-50 border border-slate-200 p-3.5 text-slate-800 rounded-lg text-sm font-medium focus:ring-2 focus:ring-[#FBBF24] focus:border-transparent outline-none transition-shadow resize-none h-[80px] placeholder:text-slate-400"
+                                    ></textarea>
 
-                        <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
-                            <h3 className="font-bold mb-4 flex items-center gap-2"><HardHat className="h-5 w-5 text-primary" /> Fleet Highlights</h3>
-                            <ul className="grid grid-cols-2 gap-3 text-sm font-medium text-slate-600 dark:text-slate-400">
-                                <li>• Active machines: 45+</li>
-                                <li>• Operator included: Yes</li>
-                                <li>• Maintenance support: 24/7</li>
-                                <li>• Delivery standard: 30-min response</li>
-                            </ul>
+                                    <div className="flex justify-center pt-3">
+                                        <button
+                                            type="submit"
+                                            disabled={submitting}
+                                            className="bg-[#FBBF24] hover:bg-[#F59E0B] text-amber-950 px-8 py-3.5 rounded-lg w-full font-black uppercase text-sm tracking-wider shadow-lg shadow-amber-500/20 active:scale-[0.98] transition-all disabled:opacity-70 disabled:active:scale-100 border border-amber-400/50"
+                                        >
+                                            {submitting ? 'Sending Request...' : 'Submit Inquiry'}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
                         </div>
                     </div>
                 </div>
-            </main>
+
+            </div>
         </div>
     );
 }
