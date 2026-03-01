@@ -1,6 +1,7 @@
 import React from "react";
-import { Download, Plus, MapPin, Filter, ShieldCheck, Copy, ChevronLeft, ChevronRight, Building2, Map, Target, ArrowRight } from "lucide-react";
+import { Download, Plus, MapPin, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import FleetRow from "../components/FleetRow";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0; // Disable caching so list is always fresh
@@ -14,7 +15,7 @@ export default async function AdminFleetMatchmaker() {
 
     const { data: vendorsData } = await supabase
         .from('vendors')
-        .select('id, company_name, mobile_number');
+        .select('*');
 
     // Create a lookup map for vendors
     const vendorMap: Record<string, any> = {};
@@ -102,58 +103,9 @@ export default async function AdminFleetMatchmaker() {
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
                             {machines && machines.length > 0 ? (
-                                machines.map((machine) => {
-                                    let imgUrl = machine.image || "https://images.unsplash.com/photo-1541888086425-d81bb19240f5?w=400&q=80"; // Fallback
-
-                                    const vendorName = machine.vendors?.company_name || "Unknown Vendor";
-                                    const vendorPhone = machine.vendors?.mobile_number || "-";
-                                    const shortId = machine.id.substring(0, 8); // Display short UUID
-
-                                    return (
-                                        <tr key={machine.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                                            <td className="px-6 py-5">
-                                                <span className="font-mono text-[11px] font-black tracking-widest text-primary bg-primary/10 px-2.5 py-1.5 rounded-lg border border-primary/20" title={machine.id}>
-                                                    #{shortId}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-5">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-20 w-24 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
-                                                        <img className="w-full h-full object-cover" src={imgUrl} alt={machine.name} />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">{machine.name}</p>
-                                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-0.5">{machine.category_id || 'Equipment'}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-5">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-bold text-sm">
-                                                        <ShieldCheck className="size-4 text-primary" />
-                                                        {vendorName}
-                                                    </div>
-                                                    <span className="text-xs font-medium text-slate-500 ml-5">{vendorPhone}</span>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-5">
-                                                <span className="text-sm font-bold text-slate-600 dark:text-slate-400">{machine.location_pincode || '-'}</span>
-                                            </td>
-                                            <td className="px-6 py-5">
-                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20`}>
-                                                    <span className={`size-1.5 rounded-full bg-emerald-500 animate-pulse`}></span>
-                                                    Live
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-5 text-right">
-                                                <button className="inline-flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-widest bg-primary/5 hover:bg-primary/10 border border-primary/10 px-4 py-2.5 rounded-xl transition-all hover:scale-105 active:scale-95">
-                                                    <Copy className="size-4" />
-                                                    Copy Details
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })
+                                machines.map((machine) => (
+                                    <FleetRow key={machine.id} machine={machine} />
+                                ))
                             ) : (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-slate-500 text-sm font-medium">No equipment found in the database.</td>
@@ -163,7 +115,7 @@ export default async function AdminFleetMatchmaker() {
                     </table>
                 </div>
                 <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Showing 4 of 248 items</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Showing {machines.length} items</p>
                     <div className="flex gap-2">
                         <button className="size-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors bg-white dark:bg-slate-900 shadow-sm">
                             <ChevronLeft className="size-5" />
