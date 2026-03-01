@@ -6,17 +6,27 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0; // Disable caching so list is always fresh
 
 export default async function AdminFleetMatchmaker() {
-    // Fetch machines and join with vendors table to get vendor details
-    const { data: machines } = await supabase
+    // Fetch machines and vendors separately to bypass missing Supabase foreign key relationship
+    const { data: machinesData } = await supabase
         .from('machines')
-        .select(`
-            *,
-            vendors (
-                company_name,
-                mobile_number
-            )
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
+
+    const { data: vendorsData } = await supabase
+        .from('vendors')
+        .select('id, company_name, mobile_number');
+
+    // Create a lookup map for vendors
+    const vendorMap: Record<string, any> = {};
+    if (vendorsData) {
+        vendorsData.forEach(v => { vendorMap[v.id] = v; });
+    }
+
+    // Attach vendor details to machines
+    const machines = machinesData ? machinesData.map(m => ({
+        ...m,
+        vendors: vendorMap[m.vendor_id] || null
+    })) : [];
     return (
         <div className="max-w-7xl mx-auto flex flex-col gap-8 pb-10">
             {/* Header section */}
