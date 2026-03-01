@@ -30,6 +30,9 @@ export default function VendorLogin() {
 
             if (signInError) throw signInError;
 
+            // Set simple cookie for Next.js Middleware since Supabase JS uses localStorage
+            document.cookie = "vendor_auth=true; path=/; max-age=86400"; // 24 hours
+
             // Success! Redirect to dashboard with full reload
             window.location.href = "/dashboard";
         } catch (err: any) {

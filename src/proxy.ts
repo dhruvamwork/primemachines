@@ -16,10 +16,11 @@ export async function proxy(req: NextRequest) {
 
     // Protect the vendor dashboard routes
     if (req.nextUrl.pathname.startsWith('/dashboard')) {
+        const vendorAuthCookie = req.cookies.get('vendor_auth');
         const supabaseAuthCookie = req.cookies.getAll().find(c => c.name.startsWith('sb-') && c.name.endsWith('-auth-token'));
 
-        // Only allow access if a Supabase auth cookie exists
-        if (!supabaseAuthCookie) {
+        // Only allow access if a Supabase auth cookie or vendor_auth cookie exists
+        if (!supabaseAuthCookie && !vendorAuthCookie) {
             const loginUrl = new URL('/vendor-login', req.url);
             return NextResponse.redirect(loginUrl);
         }
