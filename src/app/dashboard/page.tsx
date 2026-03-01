@@ -11,6 +11,9 @@ export default function PartnerDashboard() {
     const [loading, setLoading] = useState(true);
     const [machines, setMachines] = useState<any[]>([]);
     const [vendorProfile, setVendorProfile] = useState<any>(null);
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [editForm, setEditForm] = useState({ company_name: '', full_name: '', mobile: '', pincode: '' });
+    const [savingProfile, setSavingProfile] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -32,6 +35,12 @@ export default function PartnerDashboard() {
 
                     if (vendorData) {
                         setVendorProfile(vendorData);
+                        setEditForm({
+                            company_name: vendorData.company_name || '',
+                            full_name: vendorData.contact_name || vendorData.full_name || '',
+                            mobile: vendorData.mobile || vendorData.mobile_number || '',
+                            pincode: vendorData.pincode || ''
+                        });
                         vendorIdToUse = vendorData.id;
                     }
                 }
@@ -71,6 +80,31 @@ export default function PartnerDashboard() {
         }
     };
 
+    const handleUpdateProfile = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSavingProfile(true);
+
+        const { error } = await supabase
+            .from('vendors')
+            .update({
+                company_name: editForm.company_name,
+                contact_name: editForm.full_name,
+                full_name: editForm.full_name,
+                mobile: editForm.mobile,
+                mobile_number: editForm.mobile,
+                pincode: editForm.pincode
+            })
+            .eq('id', vendorProfile.id);
+
+        if (!error) {
+            setVendorProfile({ ...vendorProfile, ...editForm, contact_name: editForm.full_name, mobile_number: editForm.mobile });
+            setIsEditingProfile(false);
+        } else {
+            alert("Failed to update profile");
+        }
+        setSavingProfile(false);
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-background-light dark:bg-background-dark flex items-center justify-center">
@@ -96,14 +130,24 @@ export default function PartnerDashboard() {
                         </Link>
 
                         <div className="flex items-center gap-4">
-                            <span className="text-sm font-bold text-slate-500 hidden sm:block">
-                                {user?.phone || user?.email}
-                            </span>
+                            {vendorProfile && (
+                                <button onClick={() => setIsEditingProfile(true)} className="flex items-center gap-3 group">
+                                    <div className="hidden sm:flex flex-col items-end">
+                                        <span className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">{vendorProfile.company_name || 'Partner Account'}</span>
+                                        <span className="text-xs text-slate-500 font-medium">{vendorProfile.email}</span>
+                                    </div>
+                                    <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-black uppercase tracking-widest border border-primary/20 shadow-sm group-hover:scale-105 transition-transform">
+                                        {vendorProfile.company_name ? vendorProfile.company_name.substring(0, 2) : 'PR'}
+                                    </div>
+                                </button>
+                            )}
+                            <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block mx-1"></div>
                             <button
                                 onClick={handleSignOut}
-                                className="p-2 text-slate-500 hover:text-red-500 transition-colors"
+                                className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-slate-500 hover:text-red-500 transition-colors bg-slate-50 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-2 rounded-lg"
                             >
-                                <LogOut className="h-5 w-5" />
+                                <LogOut className="h-4 w-4" />
+                                <span className="hidden sm:block">Sign Out</span>
                             </button>
                         </div>
                     </div>
@@ -132,6 +176,29 @@ export default function PartnerDashboard() {
                         Upload Vehicle
                     </Link>
                 </div>
+
+                {/* Vendor Identity Card */}
+                {vendorProfile && (
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/3 blur-3xl pointer-events-none"></div>
+                        <div className="flex items-center gap-5 z-10 w-full sm:w-auto">
+                            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl bg-gradient-to-br from-primary to-orange-600 text-white flex items-center justify-center font-black text-2xl uppercase tracking-widest shadow-lg shadow-primary/30 shrink-0">
+                                {vendorProfile.company_name ? vendorProfile.company_name.substring(0, 2) : 'PR'}
+                            </div>
+                            <div className="flex-1 min-w-0 flex flex-col gap-1">
+                                <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight truncate">{vendorProfile.company_name || 'Setup your profile'}</h2>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1">
+                                    <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><HardHat className="size-3.5 text-primary" /> {vendorProfile.contact_name || vendorProfile.full_name || 'No Name Set'}</span>
+                                    <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><Activity className="size-3.5 text-primary" /> {vendorProfile.mobile || vendorProfile.mobile_number || 'No Phone'}</span>
+                                    <span className="text-xs font-bold text-slate-500 flex items-center gap-1"><MapPin className="size-3.5 text-primary" /> Pincode: {vendorProfile.pincode || 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button onClick={() => setIsEditingProfile(true)} className="w-full sm:w-auto z-10 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs uppercase tracking-widest py-3 px-6 rounded-xl transition-all border border-slate-200 dark:border-slate-700 shadow-sm">
+                            Edit Profile
+                        </button>
+                    </div>
+                )}
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -228,6 +295,47 @@ export default function PartnerDashboard() {
                     </div>
                 )}
             </main>
+
+            {/* Profile Edit Modal */}
+            {isEditingProfile && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
+                            <h3 className="text-lg font-black uppercase tracking-wide text-slate-900 dark:text-white">Edit Partner Profile</h3>
+                            <button onClick={() => setIsEditingProfile(false)} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
+                                <Trash2 className="h-4 w-4 hidden" /> {/* Hidden icon trick to preserve space */}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                            </button>
+                        </div>
+                        <form onSubmit={handleUpdateProfile} className="p-6 flex flex-col gap-5">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Company Name</label>
+                                <input required value={editForm.company_name} onChange={e => setEditForm({ ...editForm, company_name: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-medium text-sm text-slate-900 dark:text-white" />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Primary Contact Name</label>
+                                <input required value={editForm.full_name} onChange={e => setEditForm({ ...editForm, full_name: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-medium text-sm text-slate-900 dark:text-white" />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Mobile Number</label>
+                                <input required type="tel" value={editForm.mobile} onChange={e => setEditForm({ ...editForm, mobile: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-bold text-sm text-slate-900 dark:text-white" />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Base Pincode</label>
+                                <input required type="text" value={editForm.pincode} onChange={e => setEditForm({ ...editForm, pincode: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all font-bold text-sm text-slate-900 dark:text-white" />
+                            </div>
+                            <div className="pt-4 flex gap-3">
+                                <button type="button" onClick={() => setIsEditingProfile(false)} className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-widest text-xs py-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" disabled={savingProfile} className="flex-1 bg-primary text-white font-black uppercase tracking-widest text-xs py-4 rounded-xl hover:bg-orange-600 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-70 disabled:active:scale-100">
+                                    {savingProfile ? 'Saving...' : 'Save Profile'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
