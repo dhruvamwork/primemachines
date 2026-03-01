@@ -197,6 +197,7 @@ export default function VendorProfilePage() {
                                                 <tr className="bg-slate-100 border-b-2 border-slate-200 text-[11px] uppercase tracking-widest text-slate-500">
                                                     <th className="p-4 font-black">Vehicle No.</th>
                                                     <th className="p-4 font-black">Brand</th>
+                                                    <th className="p-4 font-black text-center">Qty</th>
                                                     <th className="p-4 font-black text-center">Mfg Year (Life)</th>
                                                     <th className="p-4 font-black text-right text-amber-600">Hour (₹)</th>
                                                     <th className="p-4 font-black text-right text-amber-600">Day (₹)</th>
@@ -211,21 +212,32 @@ export default function VendorProfilePage() {
                                                     const monthly = m.price_monthly || ((m.price_daily || m.price_per_day || m.price || 0) * 25);
 
                                                     return (
-                                                        <tr key={m.id} className="hover:bg-amber-50/30 transition-colors text-sm font-medium">
-                                                            <td className="p-4 font-black text-slate-800 uppercase tracking-widest text-[13px]">{m.registration_plate || m.name}</td>
-                                                            <td className="p-4 text-slate-600 uppercase font-bold text-[13px]">{m.brand || '---'}</td>
-                                                            <td className="p-4 text-center text-slate-600 font-bold">{m.mfg_year || '---'}</td>
-                                                            <td className="p-4 text-right font-black text-slate-800">{hourly > 0 ? hourly.toLocaleString('en-IN') : '--'}</td>
-                                                            <td className="p-4 text-right font-black text-amber-900 bg-amber-50/50">{daily > 0 ? daily.toLocaleString('en-IN') : '--'}</td>
-                                                            <td className="p-4 text-right font-black text-slate-800">{monthly > 0 ? monthly.toLocaleString('en-IN') : '--'}</td>
-                                                            <td className="p-4 text-center">
-                                                                {m.operator_included !== false ? (
-                                                                    <span className="inline-flex items-center gap-1 text-green-700 bg-green-100 px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest"><CheckSquare className="w-3 h-3" /> Yes</span>
-                                                                ) : (
-                                                                    <span className="inline-flex text-slate-500 bg-slate-100 px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest">No</span>
-                                                                )}
-                                                            </td>
-                                                        </tr>
+                                                        <>
+                                                            <tr key={m.id} className="hover:bg-amber-50/30 transition-colors text-sm font-medium">
+                                                                <td className="p-4 font-black text-slate-800 uppercase tracking-widest text-[13px]">{m.registration_plate || m.name}</td>
+                                                                <td className="p-4 text-slate-600 uppercase font-bold text-[13px]">{m.brand || '---'}</td>
+                                                                <td className="p-4 text-center text-slate-800 font-black">{m.quantity || 1}</td>
+                                                                <td className="p-4 text-center text-slate-600 font-bold">{m.mfg_year || '---'}</td>
+                                                                <td className="p-4 text-right font-black text-slate-800">{hourly > 0 ? hourly.toLocaleString('en-IN') : '--'}</td>
+                                                                <td className="p-4 text-right font-black text-amber-900 bg-amber-50/50">{daily > 0 ? daily.toLocaleString('en-IN') : '--'}</td>
+                                                                <td className="p-4 text-right font-black text-slate-800">{monthly > 0 ? monthly.toLocaleString('en-IN') : '--'}</td>
+                                                                <td className="p-4 text-center">
+                                                                    {m.operator_included !== false ? (
+                                                                        <span className="inline-flex items-center gap-1 text-green-700 bg-green-100 px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest"><CheckSquare className="w-3 h-3" /> Yes</span>
+                                                                    ) : (
+                                                                        <span className="inline-flex text-slate-500 bg-slate-100 px-2.5 py-1 rounded text-[10px] font-black uppercase tracking-widest">No</span>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                            {m.description && (
+                                                                <tr key={`${m.id}-desc`} className="bg-slate-50/50">
+                                                                    <td colSpan={8} className="px-4 py-3 text-xs text-slate-500 border-b border-slate-100">
+                                                                        <span className="font-bold text-slate-400 uppercase tracking-widest mr-2">Desc:</span>
+                                                                        {m.description}
+                                                                    </td>
+                                                                </tr>
+                                                            )}
+                                                        </>
                                                     );
                                                 })}
                                             </tbody>
@@ -252,8 +264,9 @@ export default function VendorProfilePage() {
                                                         </div>
                                                     </div>
                                                     <div className="grid grid-cols-2 gap-2 text-xs">
-                                                        <div><span className="text-slate-500 font-medium">Life (Year):</span> <span className="font-bold">{m.mfg_year || '---'}</span></div>
-                                                        <div className="text-right"><span className="text-slate-500 font-medium">Operator:</span> <span className="font-bold">{m.operator_included !== false ? 'Yes' : 'No'}</span></div>
+                                                        <div><span className="text-slate-500 font-medium">Qty:</span> <span className="font-black text-slate-800">{m.quantity || 1}</span></div>
+                                                        <div className="text-right"><span className="text-slate-500 font-medium">Life (Year):</span> <span className="font-bold">{m.mfg_year || '---'}</span></div>
+                                                        <div className="col-span-2 text-right border-t border-slate-100 pt-2 mt-1"><span className="text-slate-500 font-medium">Operator:</span> <span className="font-bold">{m.operator_included !== false ? 'Yes' : 'No'}</span></div>
                                                     </div>
                                                     <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-200 text-center bg-white rounded-lg border border-slate-100 p-2.5 shadow-inner">
                                                         <div className="flex flex-col justify-center">
@@ -269,6 +282,11 @@ export default function VendorProfilePage() {
                                                             <span className="font-black text-slate-700 text-xs">₹ {monthly > 0 ? monthly.toLocaleString('en-IN') : '--'}</span>
                                                         </div>
                                                     </div>
+                                                    {m.description && (
+                                                        <div className="pt-3 border-t border-slate-200">
+                                                            <p className="text-xs text-slate-500 leading-relaxed"><span className="font-bold text-slate-400 uppercase tracking-widest mr-2">Desc:</span>{m.description}</p>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             );
                                         })}
@@ -358,6 +376,6 @@ export default function VendorProfilePage() {
                 </div>
 
             </div>
-        </div>
+        </div >
     );
 }

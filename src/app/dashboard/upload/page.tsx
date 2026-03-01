@@ -23,6 +23,8 @@ export default function UploadVehicle() {
     const [priceDaily, setPriceDaily] = useState("");
     const [priceMonthly, setPriceMonthly] = useState("");
     const [operatorIncluded, setOperatorIncluded] = useState(true);
+    const [quantity, setQuantity] = useState("1");
+    const [description, setDescription] = useState("");
     const [location, setLocation] = useState("");
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -104,6 +106,8 @@ export default function UploadVehicle() {
                     price_monthly: parseInt(priceMonthly) || 0,
                     price: parseInt(priceDaily) || 0,
                     operator_included: operatorIncluded,
+                    quantity: parseInt(quantity) || 1,
+                    description: description,
                     location: location,
                     image: imageUrl,
                     vendor_id: vendorIdToUse,
@@ -214,139 +218,167 @@ export default function UploadVehicle() {
                                 </div>
                             )}
                         </div>
+                    </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div className="md:col-span-2 lg:col-span-2">
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Machine Name / Model</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="md:col-span-2 lg:col-span-2">
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Machine Name / Model</label>
+                            <input
+                                required
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                type="text"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                                placeholder="e.g. 3DX Eco Super"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Category</label>
+                            <select
+                                required
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                            >
+                                <option value="JCBs">JCBs</option>
+                                <option value="Excavators">Excavators</option>
+                                <option value="Cranes">Cranes</option>
+                                <option value="Loaders">Loaders</option>
+                                <option value="Bulldozers">Bulldozers</option>
+                                <option value="Dump Trucks">Dump Trucks / Dumpers</option>
+                                <option value="Compactors">Compactors</option>
+                                <option value="Concrete Equipment">Concrete Equipment</option>
+                                <option value="Generators">Generators</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Brand</label>
+                            <input
+                                required
+                                value={brand}
+                                onChange={(e) => setBrand(e.target.value)}
+                                type="text"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                                placeholder="e.g. ACE, CAT, JCB"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Vehicle No. (Reg Plate)</label>
+                            <input
+                                required
+                                value={registrationPlate}
+                                onChange={(e) => setRegistrationPlate(e.target.value)}
+                                type="text"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold tracking-widest uppercase"
+                                placeholder="e.g. MH-04-AB-1234"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mfg. Year (Life)</label>
+                            <input
+                                required
+                                value={mfgYear}
+                                onChange={(e) => setMfgYear(e.target.value)}
+                                type="number"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                                placeholder="e.g. 2021"
+                                min="1990"
+                                max="2030"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Hourly Rent (₹)</label>
+                            <input
+                                required
+                                value={priceHourly}
+                                onChange={(e) => setPriceHourly(e.target.value)}
+                                type="number"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold text-[#D97706]"
+                                placeholder="e.g. 1500"
+                                min="0"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Daily Rent (₹)</label>
+                            <input
+                                required
+                                value={priceDaily}
+                                onChange={(e) => setPriceDaily(e.target.value)}
+                                type="number"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold text-[#D97706]"
+                                placeholder="e.g. 12000"
+                                min="0"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Monthly Rent (₹)</label>
+                            <input
+                                required
+                                value={priceMonthly}
+                                onChange={(e) => setPriceMonthly(e.target.value)}
+                                type="number"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold text-[#D97706]"
+                                placeholder="e.g. 300000"
+                                min="0"
+                            />
+                        </div>
+
+                        <div className="md:col-span-2 lg:col-span-2">
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Current Location / Pincode</label>
+                            <input
+                                required
+                                value={location}
+                                onChange={(e) => setLocation(e.target.value)}
+                                type="text"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                                placeholder="e.g. Andheri East, Mumbai 400069"
+                            />
+                        </div>
+
+                        <div className="flex flex-col justify-center mt-2">
+                            <label className="flex items-center gap-3 cursor-pointer p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 hover:border-primary transition-colors">
                                 <input
-                                    required
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    type="text"
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
-                                    placeholder="e.g. 3DX Eco Super"
+                                    type="checkbox"
+                                    checked={operatorIncluded}
+                                    onChange={(e) => setOperatorIncluded(e.target.checked)}
+                                    className="w-5 h-5 accent-primary rounded cursor-pointer"
                                 />
-                            </div>
+                                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">Operator Included</span>
+                            </label>
+                        </div>
 
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Category</label>
-                                <select
-                                    required
-                                    value={category}
-                                    onChange={(e) => setCategory(e.target.value)}
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
-                                >
-                                    <option value="JCBs">JCBs</option>
-                                    <option value="Excavators">Excavators</option>
-                                    <option value="Cranes">Cranes</option>
-                                    <option value="Loaders">Loaders</option>
-                                    <option value="Bulldozers">Bulldozers</option>
-                                    <option value="Dump Trucks">Dump Trucks / Dumpers</option>
-                                    <option value="Compactors">Compactors</option>
-                                    <option value="Concrete Equipment">Concrete Equipment</option>
-                                    <option value="Generators">Generators</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Brand</label>
-                                <input
-                                    required
-                                    value={brand}
-                                    onChange={(e) => setBrand(e.target.value)}
-                                    type="text"
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
-                                    placeholder="e.g. ACE, CAT, JCB"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Vehicle No. (Reg Plate)</label>
-                                <input
-                                    required
-                                    value={registrationPlate}
-                                    onChange={(e) => setRegistrationPlate(e.target.value)}
-                                    type="text"
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold tracking-widest uppercase"
-                                    placeholder="e.g. MH-04-AB-1234"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mfg. Year (Life)</label>
-                                <input
-                                    required
-                                    value={mfgYear}
-                                    onChange={(e) => setMfgYear(e.target.value)}
-                                    type="number"
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
-                                    placeholder="e.g. 2021"
-                                    min="1990"
-                                    max="2030"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Hourly Rent (₹)</label>
-                                <input
-                                    required
-                                    value={priceHourly}
-                                    onChange={(e) => setPriceHourly(e.target.value)}
-                                    type="number"
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold text-[#D97706]"
-                                    placeholder="e.g. 1500"
-                                    min="0"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Daily Rent (₹)</label>
-                                <input
-                                    required
-                                    value={priceDaily}
-                                    onChange={(e) => setPriceDaily(e.target.value)}
-                                    type="number"
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold text-[#D97706]"
-                                    placeholder="e.g. 12000"
-                                    min="0"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Monthly Rent (₹)</label>
-                                <input
-                                    required
-                                    value={priceMonthly}
-                                    onChange={(e) => setPriceMonthly(e.target.value)}
-                                    type="number"
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold text-[#D97706]"
-                                    placeholder="e.g. 300000"
-                                    min="0"
-                                />
-                            </div>
-
-                            <div className="md:col-span-2 lg:col-span-2">
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Current Location / Pincode</label>
-                                <input
-                                    required
-                                    value={location}
-                                    onChange={(e) => setLocation(e.target.value)}
-                                    type="text"
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
-                                    placeholder="e.g. Andheri East, Mumbai 400069"
-                                />
-                            </div>
-
-                            <div className="flex flex-col justify-center mt-2">
-                                <label className="flex items-center gap-3 cursor-pointer p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 hover:border-primary transition-colors">
+                        <div className="md:col-span-2 lg:col-span-3 mt-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+                            <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-6">Additional Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Quantity</label>
                                     <input
-                                        type="checkbox"
-                                        checked={operatorIncluded}
-                                        onChange={(e) => setOperatorIncluded(e.target.checked)}
-                                        className="w-5 h-5 accent-primary rounded cursor-pointer"
+                                        value={quantity}
+                                        onChange={(e) => setQuantity(e.target.value)}
+                                        type="number"
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold"
+                                        placeholder="e.g. 1"
+                                        min="1"
                                     />
-                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">Operator Included</span>
-                                </label>
+                                </div>
+
+                                <div className="md:col-span-2 lg:col-span-2">
+                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Service Description</label>
+                                    <textarea
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        rows={2}
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                                        placeholder="e.g. Available for excavation, foundation, and road construction work..."
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
