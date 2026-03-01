@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { HardHat, LogOut, Plus, Package, Activity, AlertCircle, Trash2, MapPin, IndianRupee, ImagePlus, Upload } from "lucide-react";
+import { HardHat, LogOut, Plus, Package, Activity, AlertCircle, Trash2, MapPin, IndianRupee, ImagePlus, Upload, Pencil, X, Save } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 
@@ -16,6 +16,15 @@ export default function PartnerDashboard() {
     const [savingProfile, setSavingProfile] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    // Edit Vehicle state
+    const [editingMachine, setEditingMachine] = useState<any>(null);
+    const [machineEditForm, setMachineEditForm] = useState({
+        name: '', category: 'Excavators', brand: '', registration_plate: '',
+        mfg_year: '', price_hourly: '', price_daily: '', price_monthly: '',
+        operator_included: true, quantity: '1', description: '', location: ''
+    });
+    const [savingMachine, setSavingMachine] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -143,6 +152,59 @@ export default function PartnerDashboard() {
             setImageFile(file);
             setImagePreview(URL.createObjectURL(file));
         }
+    };
+
+    const openEditMachine = (machine: any) => {
+        setEditingMachine(machine);
+        setMachineEditForm({
+            name: machine.name || '',
+            category: machine.category || 'Excavators',
+            brand: machine.brand || '',
+            registration_plate: machine.registration_plate || '',
+            mfg_year: machine.mfg_year?.toString() || '',
+            price_hourly: machine.price_hourly?.toString() || '',
+            price_daily: (machine.price_daily || machine.price_per_day || machine.price || '').toString(),
+            price_monthly: machine.price_monthly?.toString() || '',
+            operator_included: machine.operator_included !== false,
+            quantity: (machine.quantity || 1).toString(),
+            description: machine.description || '',
+            location: machine.location || machine.location_pincode || ''
+        });
+    };
+
+    const handleUpdateMachine = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingMachine) return;
+        setSavingMachine(true);
+
+        const { error } = await supabase
+            .from('machines')
+            .update({
+                name: machineEditForm.name,
+                category: machineEditForm.category,
+                brand: machineEditForm.brand,
+                registration_plate: machineEditForm.registration_plate,
+                mfg_year: machineEditForm.mfg_year ? parseInt(machineEditForm.mfg_year) : null,
+                price_hourly: parseInt(machineEditForm.price_hourly) || 0,
+                price_daily: parseInt(machineEditForm.price_daily) || 0,
+                price_monthly: parseInt(machineEditForm.price_monthly) || 0,
+                price: parseInt(machineEditForm.price_daily) || 0,
+                operator_included: machineEditForm.operator_included,
+                quantity: parseInt(machineEditForm.quantity) || 1,
+                description: machineEditForm.description,
+                location: machineEditForm.location,
+                location_pincode: machineEditForm.location
+            })
+            .eq('id', editingMachine.id);
+
+        if (!error) {
+            setMachines(machines.map(m => m.id === editingMachine.id ? { ...m, ...machineEditForm, mfg_year: machineEditForm.mfg_year ? parseInt(machineEditForm.mfg_year) : null, price_hourly: parseInt(machineEditForm.price_hourly) || 0, price_daily: parseInt(machineEditForm.price_daily) || 0, price_monthly: parseInt(machineEditForm.price_monthly) || 0, price: parseInt(machineEditForm.price_daily) || 0, quantity: parseInt(machineEditForm.quantity) || 1, operator_included: machineEditForm.operator_included, location_pincode: machineEditForm.location } : m));
+            setEditingMachine(null);
+        } else {
+            console.error("Machine update error:", error);
+            alert("Failed to update machine details.");
+        }
+        setSavingMachine(false);
     };
 
     if (loading) {
@@ -318,6 +380,13 @@ export default function PartnerDashboard() {
                                             {machine.status || 'available'}
                                         </span>
                                         <button
+                                            onClick={() => openEditMachine(machine)}
+                                            className="p-2 text-slate-400 hover:text-primary transition-colors"
+                                            title="Edit Machine"
+                                        >
+                                            <Pencil className="h-4 w-4" />
+                                        </button>
+                                        <button
                                             onClick={() => handleDeleteMachine(machine.id)}
                                             className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                                             title="Delete Machine"
@@ -394,6 +463,105 @@ export default function PartnerDashboard() {
                                 </button>
                                 <button type="submit" disabled={savingProfile} className="flex-1 bg-primary text-white font-black uppercase tracking-widest text-xs py-4 rounded-xl hover:bg-orange-600 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-70 disabled:active:scale-100">
                                     {savingProfile ? 'Saving...' : 'Save Profile'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Vehicle Modal */}
+            {editingMachine && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+                        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30 shrink-0">
+                            <h3 className="text-lg font-black uppercase tracking-wide text-slate-900 dark:text-white">Edit Vehicle Info</h3>
+                            <button onClick={() => setEditingMachine(null)} className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 p-2 rounded-lg bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 transition-colors">
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleUpdateMachine} className="p-5 flex flex-col gap-4 overflow-y-auto">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-1.5 md:col-span-2">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Machine Name / Model</label>
+                                    <input required value={machineEditForm.name} onChange={e => setMachineEditForm({ ...machineEditForm, name: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-medium" placeholder="e.g. 3DX Eco Super" />
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Category</label>
+                                    <select value={machineEditForm.category} onChange={e => setMachineEditForm({ ...machineEditForm, category: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-medium">
+                                        <option value="JCBs">JCBs</option>
+                                        <option value="Excavators">Excavators</option>
+                                        <option value="Cranes">Cranes</option>
+                                        <option value="Loaders">Loaders</option>
+                                        <option value="Bulldozers">Bulldozers</option>
+                                        <option value="Dump Trucks">Dump Trucks / Dumpers</option>
+                                        <option value="Compactors">Compactors</option>
+                                        <option value="Concrete Equipment">Concrete Equipment</option>
+                                        <option value="Generators">Generators</option>
+                                    </select>
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Brand</label>
+                                    <input value={machineEditForm.brand} onChange={e => setMachineEditForm({ ...machineEditForm, brand: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-medium" placeholder="e.g. JCB, TATA" />
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Vehicle / Reg. No.</label>
+                                    <input value={machineEditForm.registration_plate} onChange={e => setMachineEditForm({ ...machineEditForm, registration_plate: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold uppercase" placeholder="e.g. MH12AB1234" />
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Mfg Year</label>
+                                    <input type="number" value={machineEditForm.mfg_year} onChange={e => setMachineEditForm({ ...machineEditForm, mfg_year: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold" placeholder="e.g. 2020" />
+                                </div>
+                            </div>
+
+                            <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1 block mb-3">Charges (₹)</label>
+                                <div className="grid grid-cols-3 gap-3">
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Hourly</span>
+                                        <input type="number" value={machineEditForm.price_hourly} onChange={e => setMachineEditForm({ ...machineEditForm, price_hourly: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-black text-center" placeholder="0" />
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[9px] font-black text-primary uppercase tracking-widest text-center">Daily</span>
+                                        <input type="number" value={machineEditForm.price_daily} onChange={e => setMachineEditForm({ ...machineEditForm, price_daily: e.target.value })} className="w-full bg-primary/5 border border-primary/20 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-black text-center" placeholder="0" />
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Monthly</span>
+                                        <input type="number" value={machineEditForm.price_monthly} onChange={e => setMachineEditForm({ ...machineEditForm, price_monthly: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2.5 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-black text-center" placeholder="0" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Quantity</label>
+                                    <input type="number" min="1" value={machineEditForm.quantity} onChange={e => setMachineEditForm({ ...machineEditForm, quantity: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold" placeholder="1" />
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Location / Pincode</label>
+                                    <input value={machineEditForm.location} onChange={e => setMachineEditForm({ ...machineEditForm, location: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-medium" placeholder="e.g. 400069" />
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 py-1">
+                                <label className="flex items-center gap-3 cursor-pointer p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800 hover:border-primary transition-colors flex-1">
+                                    <input type="checkbox" checked={machineEditForm.operator_included} onChange={e => setMachineEditForm({ ...machineEditForm, operator_included: e.target.checked })} className="w-5 h-5 accent-primary rounded cursor-pointer" />
+                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">Operator Included</span>
+                                </label>
+                            </div>
+
+                            <div className="flex flex-col gap-1.5">
+                                <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Service Description</label>
+                                <textarea value={machineEditForm.description} onChange={e => setMachineEditForm({ ...machineEditForm, description: e.target.value })} rows={2} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-medium" placeholder="e.g. Available for excavation, foundation work..." />
+                            </div>
+
+                            <div className="pt-3 flex gap-3 border-t border-slate-100 dark:border-slate-800">
+                                <button type="button" onClick={() => setEditingMachine(null)} className="flex-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-widest text-xs py-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                                    Cancel
+                                </button>
+                                <button type="submit" disabled={savingMachine} className="flex-1 bg-primary text-white font-black uppercase tracking-widest text-xs py-4 rounded-xl hover:bg-orange-600 active:scale-[0.98] transition-all shadow-lg shadow-primary/20 disabled:opacity-70 disabled:active:scale-100 flex items-center justify-center gap-2">
+                                    <Save className="h-4 w-4" />
+                                    {savingMachine ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
                         </form>
