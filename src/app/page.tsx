@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   HardHat, MapPin, ShieldCheck, Headset, CreditCard,
   ChevronDown, Truck, Settings, Warehouse, Droplets, Building,
-  Mail, Phone, ChevronRight, Send, User, ArrowRight
+  Mail, Phone, ChevronRight, Send, User, ArrowRight, Building2
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
