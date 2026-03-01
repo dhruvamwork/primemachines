@@ -68,9 +68,12 @@ export default function VendorRow({ vendor }: { vendor: any }) {
                     </div>
                 </div>
 
-                <div className="col-span-1 lg:col-span-1 border-l-0 lg:border-l border-slate-200 dark:border-slate-700 pt-2 lg:pt-0 pl-0 lg:pl-4">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-${statusColor}-100 text-${statusColor}-700 dark:bg-${statusColor}-500/10 dark:text-${statusColor}-400`}>
-                        {isUpdating ? <Loader2 className="size-3 animate-spin mr-1" /> : vendor.status || 'pending'}
+                <div className="col-span-1 lg:col-span-1 border-l-0 lg:border-l border-slate-200 dark:border-slate-800/50 pt-2 lg:pt-0 pl-0 lg:pl-4">
+                    <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-${statusColor}-200 dark:border-${statusColor}-900/50 bg-${statusColor}-50 text-${statusColor}-700 dark:bg-${statusColor}-950/30 dark:text-${statusColor}-400 shadow-sm shadow-${statusColor}-500/5 backdrop-blur-sm`}>
+                        {isUpdating ? <Loader2 className="size-3 animate-spin mr-2" /> : (
+                            <span className={`size-1.5 rounded-full bg-${statusColor}-500 mr-2 animate-pulse`}></span>
+                        )}
+                        {vendor.status || 'pending'}
                     </span>
                 </div>
 
@@ -87,19 +90,21 @@ export default function VendorRow({ vendor }: { vendor: any }) {
                     </div>
 
                     {showMenu && (
-                        <div className="absolute right-0 top-full mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xl rounded-xl p-2 z-[99] w-48 flex flex-col gap-1 ring-1 ring-slate-900/5">
-                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 pb-1 pt-1">Change Status</div>
+                        <div className="absolute right-0 top-full mt-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 shadow-2xl rounded-2xl p-2 z-[99] w-56 flex flex-col gap-1 ring-1 ring-slate-900/5 transform origin-top-right transition-all animate-in fade-in slide-in-from-top-2">
+                            <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-3 pb-2 pt-2 border-b border-slate-100 dark:border-slate-800/50 mb-1">Update Status</div>
 
-                            <button onClick={(e) => { e.stopPropagation(); updateStatus('approved'); }} className="text-left px-3 py-2 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg text-emerald-600 flex items-center gap-2">
-                                <ShieldCheck className="size-4" /> Approve
+                            <button onClick={(e) => { e.stopPropagation(); updateStatus('approved'); }} className="text-left px-3 py-2.5 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl text-emerald-600 dark:text-emerald-400 flex items-center gap-3 transition-colors active:scale-95">
+                                <span className="bg-emerald-100 dark:bg-emerald-500/10 p-1.5 rounded-lg text-emerald-600 dark:text-emerald-400"><ShieldCheck className="size-4" /></span> Approve Application
                             </button>
 
-                            <button onClick={(e) => { e.stopPropagation(); updateStatus('pending'); }} className="text-left px-3 py-2 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg text-amber-600 flex items-center gap-2">
-                                <Loader2 className="size-4" /> Pending Review
+                            <button onClick={(e) => { e.stopPropagation(); updateStatus('pending'); }} className="text-left px-3 py-2.5 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl text-amber-600 dark:text-amber-400 flex items-center gap-3 transition-colors active:scale-95">
+                                <span className="bg-amber-100 dark:bg-amber-500/10 p-1.5 rounded-lg text-amber-600 dark:text-amber-400"><Loader2 className="size-4" /></span> Mark Pending
                             </button>
 
-                            <button onClick={(e) => { e.stopPropagation(); updateStatus('rejected'); }} className="text-left px-3 py-2 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg text-red-600 flex items-center gap-2 mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
-                                <X className="size-4" /> Reject Application
+                            <div className="h-px bg-slate-100 dark:bg-slate-800/50 my-1"></div>
+
+                            <button onClick={(e) => { e.stopPropagation(); updateStatus('rejected'); }} className="text-left px-3 py-2.5 text-xs font-bold hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl text-red-600 dark:text-red-400 flex items-center gap-3 transition-colors active:scale-95">
+                                <span className="bg-red-100 dark:bg-red-500/10 p-1.5 rounded-lg text-red-600 dark:text-red-400"><X className="size-4" /></span> Reject Application
                             </button>
                         </div>
                     )}
