@@ -126,12 +126,12 @@ export default function VendorProfilePage() {
                     <div className="p-6 sm:p-8 flex flex-col md:flex-row gap-8 items-stretch justify-start">
                         {/* Image / Logo */}
                         <div className="w-full md:w-[280px] aspect-video sm:aspect-[4/3] shrink-0 bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200 shadow-inner">
-                            {vendor.profile_image ? (
-                                <img src={vendor.profile_image} alt={companyName} className="w-full h-full object-cover" />
+                            {(vendor.logo_url || vendor.profile_image) ? (
+                                <img src={vendor.logo_url || vendor.profile_image} alt={companyName} className="w-full h-full object-contain bg-white p-3" />
                             ) : (
                                 <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-300">
                                     <Package className="w-12 h-12 mb-2 opacity-50" />
-                                    <span className="text-xs font-bold uppercase tracking-widest">No Image</span>
+                                    <span className="text-xs font-bold uppercase tracking-widest">No Logo</span>
                                 </div>
                             )}
                         </div>

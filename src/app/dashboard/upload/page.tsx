@@ -109,6 +109,7 @@ export default function UploadVehicle() {
                     quantity: parseInt(quantity) || 1,
                     description: description,
                     location: location,
+                    location_pincode: location,
                     image: imageUrl,
                     vendor_id: vendorIdToUse,
                     status: 'available'
