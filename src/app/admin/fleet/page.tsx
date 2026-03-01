@@ -1,12 +1,17 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { Download, Plus, MapPin, Filter, ShieldCheck, Copy, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Building2, Map, Target, ArrowRight, Package, Phone, Mail, Calendar, Wrench, Hash, FileText, User } from "lucide-react";
+import React, { useEffect, useState, useMemo } from "react";
+import { Search, MapPin, ShieldCheck, ChevronDown, ChevronUp, Building2, Phone, Mail, Calendar, Wrench, Hash, FileText, User, X } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default function AdminFleetMatchmaker() {
     const [machines, setMachines] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState<string | null>(null);
+
+    // Filter state
+    const [filterCategory, setFilterCategory] = useState("all");
+    const [filterLocation, setFilterLocation] = useState("");
+    const [filterStatus, setFilterStatus] = useState<"all" | "available">("all");
 
     useEffect(() => {
         const fetchData = async () => {
@@ -36,68 +41,111 @@ export default function AdminFleetMatchmaker() {
         fetchData();
     }, []);
 
+    // Get unique categories from actual data
+    const categories = useMemo(() => {
+        const cats = new Set<string>();
+        machines.forEach(m => { if (m.category) cats.add(m.category); });
+        return Array.from(cats).sort();
+    }, [machines]);
+
+    // Live filtering
+    const filteredMachines = useMemo(() => {
+        return machines.filter(m => {
+            // Category filter
+            if (filterCategory !== "all" && m.category !== filterCategory) return false;
+            // Location / pincode search
+            if (filterLocation.trim()) {
+                const q = filterLocation.toLowerCase();
+                const loc = (m.location || '').toLowerCase();
+                const name = (m.name || '').toLowerCase();
+                const vendor = (m.vendors?.company_name || '').toLowerCase();
+                if (!loc.includes(q) && !name.includes(q) && !vendor.includes(q)) return false;
+            }
+            // Status filter
+            if (filterStatus === "available" && m.status !== "available") return false;
+            return true;
+        });
+    }, [machines, filterCategory, filterLocation, filterStatus]);
+
     const toggleExpand = (id: string) => {
         setExpandedId(prev => prev === id ? null : id);
     };
 
+    const hasActiveFilters = filterCategory !== "all" || filterLocation.trim() !== "" || filterStatus !== "all";
+
+    const clearFilters = () => {
+        setFilterCategory("all");
+        setFilterLocation("");
+        setFilterStatus("all");
+    };
+
     return (
         <div className="max-w-7xl mx-auto flex flex-col gap-8 pb-10">
-            {/* Header section */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Fleet Matchmaker</h1>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">Internal tool for connecting inventory to high-priority construction leads.</p>
-                </div>
-                <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm">
-                        <Download className="size-5" />
-                        Export CSV
-                    </button>
-                    <button className="flex items-center gap-2 px-5 py-2 bg-primary text-white rounded-xl text-sm font-bold hover:bg-orange-600 transition-colors shadow-lg shadow-primary/20">
-                        <Plus className="size-5" />
-                        Add Equipment
-                    </button>
-                </div>
+            {/* Header */}
+            <div className="flex flex-col gap-1">
+                <h1 className="text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Fleet Overview</h1>
+                <p className="text-slate-500 dark:text-slate-400 text-sm">All uploaded machines across vendors.</p>
             </div>
 
             {/* Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="flex flex-col gap-2">
                     <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Equipment Type</label>
-                    <div className="relative">
-                        <select className="w-full h-12 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all px-4 cursor-pointer">
-                            <option>All Equipment Types</option>
-                            <option>Backhoe Loader</option>
-                            <option>Excavator</option>
-                            <option>Transit Mixer</option>
-                            <option>Crane</option>
-                        </select>
-                    </div>
+                    <select
+                        value={filterCategory}
+                        onChange={e => setFilterCategory(e.target.value)}
+                        className="w-full h-12 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all px-4 cursor-pointer"
+                    >
+                        <option value="all">All Types ({machines.length})</option>
+                        {categories.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                    </select>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Pincode / Location</label>
+                    <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Search</label>
                     <div className="relative flex items-center">
-                        <MapPin className="absolute left-4 text-slate-400 size-5" />
-                        <input className="w-full h-12 pl-12 pr-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-slate-400" placeholder="Filter by Pincode" type="text" />
+                        <Search className="absolute left-4 text-slate-400 size-4" />
+                        <input
+                            value={filterLocation}
+                            onChange={e => setFilterLocation(e.target.value)}
+                            className="w-full h-12 pl-11 pr-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all placeholder:text-slate-400"
+                            placeholder="Search by name, location, vendor..."
+                            type="text"
+                        />
+                        {filterLocation && (
+                            <button onClick={() => setFilterLocation("")} className="absolute right-3 text-slate-400 hover:text-slate-600">
+                                <X className="size-4" />
+                            </button>
+                        )}
                     </div>
                 </div>
 
                 <div className="flex flex-col gap-2">
                     <label className="text-[10px] font-bold uppercase text-slate-400 tracking-widest pl-1">Status</label>
                     <div className="flex bg-slate-100 dark:bg-slate-800/80 rounded-xl p-1 h-12 border border-slate-200 dark:border-slate-700/50">
-                        <button className="flex-1 rounded-lg bg-white dark:bg-slate-700 shadow-sm text-xs font-black text-primary uppercase tracking-widest">Active</button>
-                        <button className="flex-1 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 uppercase tracking-widest transition-colors">All</button>
+                        <button
+                            onClick={() => setFilterStatus("all")}
+                            className={`flex-1 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${filterStatus === "all" ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                        >All</button>
+                        <button
+                            onClick={() => setFilterStatus("available")}
+                            className={`flex-1 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${filterStatus === "available" ? 'bg-white dark:bg-slate-700 shadow-sm text-emerald-600' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                        >Available</button>
                     </div>
                 </div>
+            </div>
 
-                <div className="flex items-end">
-                    <button className="w-full h-12 bg-slate-900 dark:bg-primary hover:bg-slate-800 dark:hover:bg-orange-600 text-white rounded-xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg">
-                        <Filter className="size-5" />
-                        Apply Filters
+            {/* Active filters badge */}
+            {hasActiveFilters && (
+                <div className="flex items-center gap-3 -mt-4">
+                    <span className="text-xs font-bold text-slate-500">Showing {filteredMachines.length} of {machines.length} machines</span>
+                    <button onClick={clearFilters} className="text-xs font-bold text-primary hover:text-orange-600 flex items-center gap-1 transition-colors">
+                        <X className="size-3" /> Clear filters
                     </button>
                 </div>
-            </div>
+            )}
 
             {/* Inventory Table */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
@@ -111,25 +159,22 @@ export default function AdminFleetMatchmaker() {
                             <thead>
                                 <tr className="bg-slate-50/80 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
                                     <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 w-8"></th>
-                                    <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 whitespace-nowrap">Equipment ID</th>
-                                    <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 min-w-[200px]">Title</th>
+                                    <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 min-w-[200px]">Machine</th>
+                                    <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Category</th>
                                     <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 whitespace-nowrap">Vendor</th>
-                                    <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Pincode</th>
+                                    <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Location</th>
                                     <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Daily ₹</th>
                                     <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Status</th>
-                                    <th className="px-4 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
-                                {machines && machines.length > 0 ? (
-                                    machines.map((machine) => {
+                                {filteredMachines.length > 0 ? (
+                                    filteredMachines.map((machine) => {
                                         let imgUrl = machine.image || "https://images.unsplash.com/photo-1541888086425-d81bb19240f5?w=400&q=80";
                                         const vendorName = machine.vendors?.company_name || "Unknown Vendor";
-                                        const vendorPhone = machine.vendors?.mobile_number || machine.vendors?.mobile || "-";
-                                        const shortId = machine.id.substring(0, 8);
                                         const isExpanded = expandedId === machine.id;
                                         const daily = machine.price_daily || machine.price_per_day || machine.price || 0;
-                                        const pincode = machine.location_pincode || machine.location || '-';
+                                        const location = machine.location || '-';
 
                                         return (
                                             <React.Fragment key={machine.id}>
@@ -143,20 +188,18 @@ export default function AdminFleetMatchmaker() {
                                                         </button>
                                                     </td>
                                                     <td className="px-4 py-4">
-                                                        <span className="font-mono text-[11px] font-black tracking-widest text-primary bg-primary/10 px-2.5 py-1.5 rounded-lg border border-primary/20" title={machine.id}>
-                                                            #{shortId}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-4 py-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="h-14 w-18 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
+                                                            <div className="h-12 w-16 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
                                                                 <img className="w-full h-full object-cover" src={imgUrl} alt={machine.name} />
                                                             </div>
                                                             <div>
                                                                 <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">{machine.name}</p>
-                                                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{machine.category || 'Equipment'}</p>
+                                                                <p className="text-[10px] font-bold text-slate-400 mt-0.5">{machine.brand || ''}</p>
                                                             </div>
                                                         </div>
+                                                    </td>
+                                                    <td className="px-4 py-4">
+                                                        <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2.5 py-1.5 rounded-lg border border-primary/20">{machine.category || 'Equipment'}</span>
                                                     </td>
                                                     <td className="px-4 py-4">
                                                         <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-bold text-sm">
@@ -165,29 +208,26 @@ export default function AdminFleetMatchmaker() {
                                                         </div>
                                                     </td>
                                                     <td className="px-4 py-4">
-                                                        <span className="text-sm font-bold text-slate-600 dark:text-slate-400">{pincode}</span>
+                                                        <span className="text-sm font-bold text-slate-600 dark:text-slate-400">{location}</span>
                                                     </td>
                                                     <td className="px-4 py-4">
                                                         <span className="text-sm font-black text-slate-800 dark:text-slate-200">₹{daily > 0 ? daily.toLocaleString('en-IN') : '--'}</span>
                                                     </td>
                                                     <td className="px-4 py-4">
-                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20">
-                                                            <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                                            Live
+                                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${machine.status === 'available'
+                                                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20'
+                                                                : 'bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-200 dark:border-amber-500/20'
+                                                            }`}>
+                                                            <span className={`size-1.5 rounded-full ${machine.status === 'available' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
+                                                            {machine.status || 'available'}
                                                         </span>
-                                                    </td>
-                                                    <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                                                        <button className="inline-flex items-center gap-2 text-primary font-bold text-[10px] uppercase tracking-widest bg-primary/5 hover:bg-primary/10 border border-primary/10 px-4 py-2 rounded-xl transition-all hover:scale-105 active:scale-95">
-                                                            <Copy className="size-4" />
-                                                            Copy
-                                                        </button>
                                                     </td>
                                                 </tr>
 
                                                 {/* Expanded Details Row */}
                                                 {isExpanded && (
                                                     <tr className="bg-slate-50/80 dark:bg-slate-800/20">
-                                                        <td colSpan={8} className="px-6 py-6">
+                                                        <td colSpan={7} className="px-6 py-6">
                                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                                                 {/* Machine Details */}
                                                                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-5 space-y-4">
@@ -219,7 +259,7 @@ export default function AdminFleetMatchmaker() {
                                                                         </div>
                                                                         <div>
                                                                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Location</span>
-                                                                            <span className="font-bold text-slate-800 dark:text-slate-200">{machine.location || machine.location_pincode || '---'}</span>
+                                                                            <span className="font-bold text-slate-800 dark:text-slate-200">{machine.location || '---'}</span>
                                                                         </div>
                                                                     </div>
 
@@ -310,24 +350,29 @@ export default function AdminFleetMatchmaker() {
                                     })
                                 ) : (
                                     <tr>
-                                        <td colSpan={8} className="px-6 py-12 text-center text-slate-500 text-sm font-medium">No equipment found in the database.</td>
+                                        <td colSpan={7} className="px-6 py-12 text-center">
+                                            <p className="text-slate-500 text-sm font-medium">
+                                                {hasActiveFilters ? `No machines match your filters.` : 'No equipment found in the database.'}
+                                            </p>
+                                            {hasActiveFilters && (
+                                                <button onClick={clearFilters} className="mt-2 text-primary font-bold text-xs uppercase tracking-widest hover:text-orange-600 transition-colors">
+                                                    Clear filters
+                                                </button>
+                                            )}
+                                        </td>
                                     </tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
                 )}
-                <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Showing {machines.length} items</p>
-                    <div className="flex gap-2">
-                        <button className="size-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors bg-white dark:bg-slate-900 shadow-sm">
-                            <ChevronLeft className="size-5" />
-                        </button>
-                        <button className="size-8 rounded-lg bg-primary text-white shadow-md shadow-primary/20 flex items-center justify-center text-xs font-bold transition-transform hover:scale-105">1</button>
-                        <button className="size-8 rounded-lg border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors bg-white dark:bg-slate-900 shadow-sm">
-                            <ChevronRight className="size-5" />
-                        </button>
-                    </div>
+                <div className="px-6 py-4 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-200 dark:border-slate-800">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                        {hasActiveFilters
+                            ? `Showing ${filteredMachines.length} of ${machines.length} machines`
+                            : `Total: ${machines.length} machines`
+                        }
+                    </p>
                 </div>
             </div>
         </div>
