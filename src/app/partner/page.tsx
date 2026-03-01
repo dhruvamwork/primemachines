@@ -69,6 +69,7 @@ export default function PartnerProgram() {
                     {
                         company_name: formData.companyName,
                         contact_name: formData.fullName,
+                        full_name: formData.fullName,
                         email: formData.email,
                         mobile_number: formData.mobile,
                         equipment_types: formData.machineTypes,
@@ -84,7 +85,7 @@ export default function PartnerProgram() {
                 if (insertError.code === '23505') {
                     throw new Error("An application with this email or mobile number already exists.");
                 }
-                throw new Error("Failed to submit application. Please try again.");
+                throw new Error(`DB Error: ${insertError.message || insertError.details || JSON.stringify(insertError)}`);
             }
 
             setSuccess(true);
