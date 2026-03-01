@@ -26,8 +26,8 @@ export default async function AdminDashboard() {
             <div className="flex flex-col gap-8">
 
                 {/* Leads Table */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
-                    <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/20">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+                    <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/20 rounded-t-2xl">
                         <div>
                             <h3 className="text-lg font-black uppercase tracking-wide flex items-center gap-2">
                                 <Activity className="size-5 text-primary" />

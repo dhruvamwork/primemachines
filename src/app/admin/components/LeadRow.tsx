@@ -32,7 +32,7 @@ export default function LeadRow({ lead }: { lead: any }) {
     if (lead.status === 'completed') statusColor = "emerald";
 
     return (
-        <div className="flex flex-col border-b border-slate-100 last:border-0 dark:border-slate-800/50 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
+        <div className={`flex flex-col border-b border-slate-100 last:border-0 dark:border-slate-800/50 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors ${showMenu ? 'relative z-50' : ''}`}>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center px-6 py-4 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
                 <div className="col-span-1 lg:col-span-2 text-xs font-bold text-slate-500">
                     <span className="lg:hidden uppercase tracking-widest text-[10px] block mb-1">Date:</span>
