@@ -12,14 +12,11 @@ export default function About() {
                 </Link>
                 <div className="hidden md:flex flex-1 justify-end gap-10">
                     <nav className="flex items-center gap-8">
-                        <Link className="text-sm font-semibold hover:text-primary transition-colors text-slate-700 dark:text-slate-200" href="/fleet">Fleet</Link>
-                        <Link className="text-sm font-semibold hover:text-primary transition-colors text-slate-700 dark:text-slate-200" href="/how-it-works">How it Works</Link>
+                        <Link className="text-sm font-semibold hover:text-primary transition-colors text-slate-700 dark:text-slate-200" href="/">Home</Link>
                         <Link className="text-sm font-bold border-b-2 border-primary text-primary" href="/about">About</Link>
+                        <Link className="text-sm font-semibold hover:text-primary transition-colors text-slate-700 dark:text-slate-200" href="/how-it-works">How it Works</Link>
                         <Link className="text-sm font-semibold hover:text-primary transition-colors text-slate-700 dark:text-slate-200" href="/partner">Partner Program</Link>
                     </nav>
-                    <Link href="/post-requirement" className="flex min-w-[120px] cursor-pointer items-center justify-center rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold uppercase tracking-wider transition-transform hover:scale-105 shadow-lg shadow-primary/20">
-                        Post Requirement
-                    </Link>
                 </div>
                 <div className="md:hidden">
                     <Menu className="text-3xl h-8 w-8 text-slate-900 dark:text-white" />
@@ -38,8 +35,7 @@ export default function About() {
                                     Powering the world&apos;s most ambitious projects with scale, reliability, and precision response.
                                 </p>
                                 <div className="flex gap-4 mt-2">
-                                    <Link href="/fleet" className="bg-primary hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-bold uppercase tracking-wide transition-colors">View Inventory</Link>
-                                    <button className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-8 py-4 rounded-lg font-bold uppercase tracking-wide border border-white/30 transition-colors">Our Expertise</button>
+                                    <Link href="/" className="bg-primary hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-bold uppercase tracking-wide transition-colors">Start Request</Link>
                                 </div>
                             </div>
                         </div>

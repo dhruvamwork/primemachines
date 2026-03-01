@@ -14,14 +14,10 @@ export default function HowItWorks() {
                 </Link>
                 <div className="flex flex-1 justify-end gap-8 items-center">
                     <nav className="hidden md:flex items-center gap-9">
-                        <Link className="text-slate-700 dark:text-slate-200 text-sm font-semibold hover:text-primary transition-colors" href="/fleet">Fleet</Link>
-                        <Link className="text-slate-700 dark:text-slate-200 text-sm font-semibold hover:text-primary transition-colors" href="/partner">Vendors</Link>
                         <Link className="text-primary text-sm font-bold border-b-2 border-primary" href="/how-it-works">How it Works</Link>
                         <Link className="text-slate-700 dark:text-slate-200 text-sm font-semibold hover:text-primary transition-colors" href="/about">About</Link>
+                        <Link className="text-slate-700 dark:text-slate-200 text-sm font-semibold hover:text-primary transition-colors" href="/partner">Partner Program</Link>
                     </nav>
-                    <Link href="/post-requirement" className="flex min-w-[120px] cursor-pointer items-center justify-center rounded-lg h-10 px-5 bg-primary text-white text-sm font-bold leading-normal tracking-wide shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all uppercase italic">
-                        <span>Post Requirement</span>
-                    </Link>
                 </div>
             </header>
 
@@ -36,13 +32,7 @@ export default function HowItWorks() {
                     </p>
                 </div>
 
-                {/* Toggle Navigation */}
-                <div className="flex justify-center mb-12">
-                    <div className="inline-flex p-1 bg-slate-200 dark:bg-slate-800 rounded-xl">
-                        <button className="px-8 py-3 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-sm transition-colors uppercase text-sm tracking-wider">For Contractors</button>
-                        <button className="px-8 py-3 rounded-lg text-slate-500 dark:text-slate-400 font-bold hover:text-slate-700 transition-colors uppercase text-sm tracking-wider">For Vendors</button>
-                    </div>
-                </div>
+
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
                     {/* Section 1: For Contractors */}
@@ -60,8 +50,8 @@ export default function HowItWorks() {
                                     <div className="w-px grow bg-slate-200 dark:bg-slate-800 mt-4"></div>
                                 </div>
                                 <div className="pb-8">
-                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Browse Our Premier Fleet</h3>
-                                    <p className="text-slate-600 dark:text-slate-400 font-medium">Explore our extensive catalog of heavy machinery, including excavators, cranes, and dozers from industry-leading brands.</p>
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Submit Requirement</h3>
+                                    <p className="text-slate-600 dark:text-slate-400 font-medium">Use our home page to tell us exactly what machinery you need, when you need it, and where your site is located.</p>
                                     <div className="mt-4 rounded-xl overflow-hidden aspect-video bg-slate-200 dark:bg-slate-800">
                                         <img className="w-full h-full object-cover" alt="Row of modern yellow excavators parked on a construction site" src="/images/login_bg.png" />
                                     </div>
