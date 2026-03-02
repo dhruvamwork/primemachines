@@ -11,6 +11,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Prime Construction Machines | Premium Construction Equipment Rental",
   description: "India's leading B2B marketplace for heavy construction machinery.",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
