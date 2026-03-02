@@ -52,10 +52,10 @@ export default function VendorLogin() {
             setError("Please enter your email address.");
             return;
         }
-        setResetLoading(true);
+        const resetUrl = `${window.location.origin}/auth/reset-password`;
         try {
             const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-                redirectTo: `${window.location.origin}/auth/reset-password`,
+                redirectTo: resetUrl,
             });
             if (resetError) throw resetError;
             setResetSent(true);
