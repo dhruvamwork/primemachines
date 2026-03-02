@@ -1,10 +1,15 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { HardHat, ArrowLeft, Upload, Save, CheckCircle2, X, ImagePlus } from "lucide-react";
+import { HardHat, ArrowLeft, Upload, Save, CheckCircle2, X, ImagePlus, Plus, Minus, Hash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+
+interface UnitDetail {
+    registration_plate: string;
+    mfg_year: string;
+}
 
 export default function UploadVehicle() {
     const router = useRouter();
@@ -13,22 +18,37 @@ export default function UploadVehicle() {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState("");
 
-    // Form states
+    // Shared fields (same for all units of this machine type)
     const [name, setName] = useState("");
     const [category, setCategory] = useState("Excavators");
     const [brand, setBrand] = useState("");
-    const [registrationPlate, setRegistrationPlate] = useState("");
-    const [mfgYear, setMfgYear] = useState("");
     const [priceHourly, setPriceHourly] = useState("");
     const [priceDaily, setPriceDaily] = useState("");
     const [priceMonthly, setPriceMonthly] = useState("");
     const [operatorIncluded, setOperatorIncluded] = useState(true);
-    const [quantity, setQuantity] = useState("1");
     const [description, setDescription] = useState("");
     const [location, setLocation] = useState("");
     const [pincode, setPincode] = useState("");
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    // Per-unit details
+    const [units, setUnits] = useState<UnitDetail[]>([{ registration_plate: '', mfg_year: '' }]);
+
+    const quantity = units.length;
+
+    const addUnit = () => {
+        setUnits(prev => [...prev, { registration_plate: '', mfg_year: '' }]);
+    };
+
+    const removeUnit = (index: number) => {
+        if (units.length <= 1) return;
+        setUnits(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const updateUnit = (index: number, field: keyof UnitDetail, value: string) => {
+        setUnits(prev => prev.map((u, i) => i === index ? { ...u, [field]: value } : u));
+    };
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -49,7 +69,6 @@ export default function UploadVehicle() {
         setError("");
 
         try {
-            // Get the current logged-in vendor
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
                 alert("You must be logged in to upload a vehicle.");
@@ -57,7 +76,6 @@ export default function UploadVehicle() {
                 return;
             }
 
-            // Fetch the actual vendor profile to get the table ID instead of the Auth ID
             const identifier = user.email || user.phone;
             const { data: vendorProfile } = await supabase
                 .from('vendors')
@@ -67,9 +85,8 @@ export default function UploadVehicle() {
 
             const vendorIdToUse = vendorProfile ? vendorProfile.id : user.id;
 
-            let imageUrl = "/images/placeholder-machine.jpg"; // Fallback
+            let imageUrl = "/images/placeholder-machine.jpg";
 
-            // Upload image to Supabase Storage if one was selected
             if (imageFile) {
                 const fileExt = imageFile.name.split('.').pop();
                 const fileName = `${user.id}/${Date.now()}.${fileExt}`;
@@ -83,9 +100,7 @@ export default function UploadVehicle() {
 
                 if (uploadError) {
                     console.error("Storage upload error:", uploadError);
-                    // Continue without image if storage fails (bucket might not exist yet)
                 } else {
-                    // Get the public URL
                     const { data: { publicUrl } } = supabase.storage
                         .from('machine-images')
                         .getPublicUrl(uploadData.path);
@@ -93,27 +108,29 @@ export default function UploadVehicle() {
                 }
             }
 
-            // Insert machine record into the database
+            // Insert one record per unit
+            const records = units.map((unit, index) => ({
+                name: name,
+                category: category,
+                brand: brand,
+                registration_plate: unit.registration_plate,
+                mfg_year: unit.mfg_year ? parseInt(unit.mfg_year) : null,
+                price_hourly: parseInt(priceHourly) || 0,
+                price_daily: parseInt(priceDaily) || 0,
+                price_monthly: parseInt(priceMonthly) || 0,
+                price: parseInt(priceDaily) || 0,
+                operator_included: operatorIncluded,
+                quantity: 1,
+                description: description,
+                location: pincode ? `${location} - ${pincode}` : location,
+                image: imageUrl,
+                vendor_id: vendorIdToUse,
+                status: 'available'
+            }));
+
             const { error: insertError } = await supabase
                 .from('machines')
-                .insert([{
-                    name: name,
-                    category: category,
-                    brand: brand,
-                    registration_plate: registrationPlate,
-                    mfg_year: mfgYear ? parseInt(mfgYear) : null,
-                    price_hourly: parseInt(priceHourly) || 0,
-                    price_daily: parseInt(priceDaily) || 0,
-                    price_monthly: parseInt(priceMonthly) || 0,
-                    price: parseInt(priceDaily) || 0,
-                    operator_included: operatorIncluded,
-                    quantity: parseInt(quantity) || 1,
-                    description: description,
-                    location: pincode ? `${location} - ${pincode}` : location,
-                    image: imageUrl,
-                    vendor_id: vendorIdToUse,
-                    status: 'available'
-                }]);
+                .insert(records);
 
             if (insertError) {
                 console.error("Insert error:", insertError);
@@ -137,7 +154,9 @@ export default function UploadVehicle() {
                 <div className="bg-green-500/10 p-6 rounded-full">
                     <CheckCircle2 className="h-16 w-16 text-green-500" />
                 </div>
-                <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Machine Uploaded!</h2>
+                <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                    {quantity > 1 ? `${quantity} Machines Uploaded!` : 'Machine Uploaded!'}
+                </h2>
                 <p className="text-slate-500">Redirecting to dashboard...</p>
             </div>
         );
@@ -221,6 +240,7 @@ export default function UploadVehicle() {
                         </div>
                     </div>
 
+                    {/* Shared Machine Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div className="md:col-span-2 lg:col-span-2">
                             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Machine Name / Model</label>
@@ -263,32 +283,6 @@ export default function UploadVehicle() {
                                 type="text"
                                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
                                 placeholder="e.g. ACE, CAT, JCB"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Vehicle No. (Reg Plate)</label>
-                            <input
-                                required
-                                value={registrationPlate}
-                                onChange={(e) => setRegistrationPlate(e.target.value)}
-                                type="text"
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold tracking-widest uppercase"
-                                placeholder="e.g. MH-04-AB-1234"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mfg. Year (Life)</label>
-                            <input
-                                required
-                                value={mfgYear}
-                                onChange={(e) => setMfgYear(e.target.value)}
-                                type="number"
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
-                                placeholder="e.g. 2021"
-                                min="1990"
-                                max="2030"
                             />
                         </div>
 
@@ -371,33 +365,95 @@ export default function UploadVehicle() {
                             </label>
                         </div>
 
-                        <div className="md:col-span-2 lg:col-span-3 mt-4 pt-6 border-t border-slate-200 dark:border-slate-800">
-                            <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest mb-6">Additional Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Quantity</label>
-                                    <input
-                                        value={quantity}
-                                        onChange={(e) => setQuantity(e.target.value)}
-                                        type="number"
-                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold"
-                                        placeholder="e.g. 1"
-                                        min="1"
-                                    />
-                                </div>
-
-                                <div className="md:col-span-2 lg:col-span-2">
-                                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Service Description</label>
-                                    <textarea
-                                        value={description}
-                                        onChange={(e) => setDescription(e.target.value)}
-                                        rows={2}
-                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
-                                        placeholder="e.g. Available for excavation, foundation, and road construction work..."
-                                    />
-                                </div>
-                            </div>
+                        <div className="md:col-span-2 lg:col-span-3">
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Service Description</label>
+                            <textarea
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                rows={2}
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                                placeholder="e.g. Available for excavation, foundation, and road construction work..."
+                            />
                         </div>
+                    </div>
+
+                    {/* Per-Unit Vehicle Details */}
+                    <div className="pt-6 border-t border-slate-200 dark:border-slate-800">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-widest">Vehicle Details</h3>
+                                <p className="text-xs text-slate-400 mt-1">Each machine needs its own registration plate and manufacturing year.</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={addUnit}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-primary/20 transition-colors"
+                            >
+                                <Plus className="size-4" />
+                                Add Machine
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {units.map((unit, index) => (
+                                <div
+                                    key={index}
+                                    className="relative bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-5"
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2">
+                                            <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary text-white text-xs font-black">{index + 1}</span>
+                                            <span className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                                                Unit {index + 1} of {quantity}
+                                            </span>
+                                        </div>
+                                        {units.length > 1 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeUnit(index)}
+                                                className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                title="Remove this unit"
+                                            >
+                                                <X className="size-4" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Vehicle No. (Reg Plate)</label>
+                                            <input
+                                                required
+                                                value={unit.registration_plate}
+                                                onChange={(e) => updateUnit(index, 'registration_plate', e.target.value)}
+                                                type="text"
+                                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm font-bold tracking-widest uppercase"
+                                                placeholder="e.g. MH-04-AB-1234"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Mfg. Year (Life)</label>
+                                            <input
+                                                required
+                                                value={unit.mfg_year}
+                                                onChange={(e) => updateUnit(index, 'mfg_year', e.target.value)}
+                                                type="number"
+                                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+                                                placeholder="e.g. 2021"
+                                                min="1990"
+                                                max="2030"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {quantity > 1 && (
+                            <p className="text-xs text-slate-400 mt-3 flex items-center gap-1.5">
+                                <Hash className="size-3" />
+                                {quantity} machines will be uploaded as separate entries with the same shared details.
+                            </p>
+                        )}
                     </div>
 
                     <div className="pt-6 border-t border-slate-200 dark:border-slate-800 flex justify-end">
@@ -406,7 +462,7 @@ export default function UploadVehicle() {
                             disabled={submitting}
                             className="bg-primary hover:bg-orange-600 text-white font-black py-4 px-8 rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-[0.98] shadow-lg disabled:opacity-70 disabled:active:scale-100 uppercase tracking-widest text-sm"
                         >
-                            {submitting ? "Uploading..." : "Save Listing"}
+                            {submitting ? "Uploading..." : quantity > 1 ? `Save ${quantity} Machines` : "Save Listing"}
                             {!submitting && <Save className="h-5 w-5" />}
                         </button>
                     </div>
