@@ -218,43 +218,43 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Trust Bar */}
-      <div className="bg-slate-900 border-y border-white/10 py-6 relative z-30 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-4 flex flex-wrap justify-center items-center gap-12 text-white/30 font-black uppercase text-xl italic tracking-widest opacity-60">
-          <div className="flex items-center gap-2"><Building2 className="w-6 h-6" /> L&T</div>
-          <div className="flex items-center gap-2"><Building2 className="w-6 h-6" /> TATA PROJECTS</div>
-          <div className="flex items-center gap-2"><Building2 className="w-6 h-6" /> AFCONS</div>
-          <div className="flex items-center gap-2"><Building2 className="w-6 h-6" /> SHAPOORJI PALLONJI</div>
-        </div>
-      </div>
-
-      {/* Static Services Grid Section */}
+      {/* Services / Our Fleet Section — Photo Cards */}
       <section className="py-24 bg-white dark:bg-slate-950">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col items-center mb-16 text-center">
-            <h3 className="text-primary font-bold uppercase tracking-widest text-sm mb-3">Our Core Fleet Expertise</h3>
+            <h3 className="text-primary font-bold uppercase tracking-widest text-sm mb-3">Our Services</h3>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black mb-6 uppercase tracking-tighter text-slate-900 dark:text-white italic max-w-3xl">
-              Machinery We Source For <span className="text-primary">Contractors</span>
+              Equipment We <span className="text-primary">Provide</span>
             </h2>
             <p className="text-slate-500 dark:text-slate-400 font-medium max-w-2xl">
-              From heavy earthmoving to precision lifting, our broker network accesses the finest managed fleet operations in the country. Let us know exactly what you need.
+              From heavy earthmoving to precision lifting — we source the finest managed fleet for your project. Every machine. Every scale.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-5">
             {[
-              { icon: <Truck className="h-8 w-8" />, title: "JCBs", desc: "Backhoe Loaders" },
-              { icon: <HardHat className="h-8 w-8" />, title: "Excavators", desc: "Heavy Digging" },
-              { icon: <Settings className="h-8 w-8" />, title: "Cranes", desc: "Lifting Gear" },
-              { icon: <Truck className="h-8 w-8" />, title: "Mixers", desc: "Concrete transport" },
-              { icon: <Truck className="h-8 w-8" />, title: "Dumpers", desc: "Bulk Hauling" }
+              { img: "/images/jcb_service.png", title: "JCBs", desc: "Backhoe Loaders" },
+              { img: "/images/excavator_service.png", title: "Excavators", desc: "Heavy Digging" },
+              { img: "/images/crane_service.png", title: "Cranes", desc: "Lifting Gear" },
+              { img: "/images/mixer_service.png", title: "Mixers", desc: "Concrete Transport" },
+              { img: "/images/dumper_service.png", title: "Dumpers", desc: "Bulk Hauling" }
             ].map((cat, idx) => (
-              <div key={idx} className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-white dark:bg-slate-800 shadow-sm border border-slate-100 dark:border-slate-700 rounded-full flex items-center justify-center mb-6 text-primary">
-                  {cat.icon}
+              <div key={idx} className="group relative rounded-2xl overflow-hidden aspect-[3/4] cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-[1.02]">
+                {/* Photo */}
+                <img
+                  src={cat.img}
+                  alt={cat.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                {/* Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
+                {/* Top Accent */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
+                {/* Content */}
+                <div className="absolute bottom-0 left-0 right-0 p-5 flex flex-col">
+                  <h4 className="text-xl md:text-2xl font-black text-white uppercase tracking-tight leading-tight">{cat.title}</h4>
+                  <p className="text-[10px] md:text-xs font-bold text-white/60 uppercase tracking-widest mt-1">{cat.desc}</p>
                 </div>
-                <h4 className="text-base md:text-lg font-black uppercase tracking-tight mb-2 text-slate-900 dark:text-white">{cat.title}</h4>
-                <p className="text-slate-500 dark:text-slate-400 text-[10px] md:text-xs font-medium uppercase tracking-wide">{cat.desc}</p>
               </div>
             ))}
           </div>
