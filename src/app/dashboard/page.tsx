@@ -66,17 +66,33 @@ export default function PartnerDashboard() {
 
                 if (machineData) setMachines(machineData);
             } else {
-                window.location.href = "/vendor-login";
+                document.cookie = "vendor_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                window.location.replace("/vendor-login");
                 return;
             }
             setLoading(false);
         };
         fetchData();
+
+        // Re-check auth when user navigates back via browser back button
+        const handleVisibilityChange = async () => {
+            if (document.visibilityState === 'visible') {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    document.cookie = "vendor_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    window.location.replace("/vendor-login");
+                }
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
     }, [router]);
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
-        window.location.href = "/vendor-login";
+        document.cookie = "vendor_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        window.location.replace("/vendor-login");
     };
 
     const handleDeleteMachine = async (machineId: string) => {

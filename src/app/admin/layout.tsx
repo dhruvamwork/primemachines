@@ -11,8 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const handleLogout = () => {
         document.cookie = "admin_auth=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        router.push("/admin-login");
-        router.refresh();
+        window.location.replace("/admin-login");
     };
 
     const navLinks = [
