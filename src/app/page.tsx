@@ -79,7 +79,7 @@ export default function Home() {
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center gap-2">
               <HardHat className="text-primary h-8 w-8" />
-              <h1 className="text-white text-2xl font-black tracking-tighter uppercase italic">
+              <h1 className="text-white text-lg sm:text-2xl font-black tracking-tighter uppercase italic">
                 Prime Construction <span className="text-primary">Machines</span>
               </h1>
             </div>
@@ -122,11 +122,11 @@ export default function Home() {
             <span className="inline-block px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-black uppercase tracking-widest mb-6 backdrop-blur-md">
               India's Premier Equipment Brokerage
             </span>
-            <h1 className="text-white text-4xl sm:text-5xl lg:text-7xl font-black leading-[1.1] tracking-tighter mb-6 uppercase italic">
+            <h1 className="text-white text-2xl sm:text-4xl lg:text-7xl font-black leading-[1.1] tracking-tighter mb-4 sm:mb-6 uppercase italic">
               Rent Heavy Construction <br className="hidden lg:block" />
               <span className="text-primary leading-tight">Equipment Instantly.</span>
             </h1>
-            <p className="text-white/80 text-lg md:text-xl font-medium mb-10 max-w-2xl leading-relaxed">
+            <p className="text-white/80 text-sm sm:text-lg md:text-xl font-medium mb-6 sm:mb-10 max-w-2xl leading-relaxed">
               Tell us what you need. Our experts will source the best verified machinery for your site within 30 minutes. Let us handle the logistics, you focus on the build.
             </p>
 

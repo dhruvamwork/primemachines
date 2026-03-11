@@ -155,9 +155,9 @@ export default function PartnerProgram() {
         <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased min-h-screen flex flex-col">
             {/* Navigation */}
             <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-200 dark:border-slate-800 px-6 md:px-20 py-4 bg-background-light dark:bg-background-dark sticky top-0 z-50">
-                <Link href="/" className="flex items-center gap-3 text-primary">
-                    <HardHat className="h-8 w-8 text-primary" />
-                    <h2 className="text-xl font-black leading-tight tracking-tight uppercase italic text-slate-900 dark:text-white">Prime Construction <span className="text-primary">Machines</span></h2>
+                <Link href="/" className="flex items-center gap-2 sm:gap-3 text-primary">
+                    <HardHat className="h-7 w-7 sm:h-8 sm:w-8 text-primary" />
+                    <h2 className="text-base sm:text-xl font-black leading-tight tracking-tight uppercase italic text-slate-900 dark:text-white">Prime Construction <span className="text-primary">Machines</span></h2>
                 </Link>
                 <div className="hidden md:flex flex-1 justify-end gap-10">
                     <nav className="flex items-center gap-8">
@@ -183,10 +183,10 @@ export default function PartnerProgram() {
                     <div className="relative max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 w-full">
                         <div className="flex-1 space-y-6">
                             <span className="inline-block px-3 py-1 rounded bg-primary/20 text-primary text-xs font-bold uppercase tracking-widest">Vendor Program</span>
-                            <h1 className="text-white text-4xl md:text-6xl font-black leading-tight tracking-tight uppercase italic">
+                            <h1 className="text-white text-2xl sm:text-4xl md:text-6xl font-black leading-tight tracking-tight uppercase italic">
                                 Partner with Prime Construction Machines and Grow Your Rental Business.
                             </h1>
-                            <p className="text-slate-300 text-lg md:text-xl max-w-2xl font-medium leading-relaxed">
+                            <p className="text-slate-300 text-sm sm:text-lg md:text-xl max-w-2xl font-medium leading-relaxed">
                                 List your machines and get high-quality leads from verified contractors. We handle the brokerage, you provide the power.
                             </p>
                         </div>
@@ -196,8 +196,8 @@ export default function PartnerProgram() {
                 {/* Main Content Area */}
                 <section className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-12 gap-12 w-full">
                     {/* Registration Form */}
-                    <div className="lg:col-span-7 bg-white dark:bg-slate-900 p-8 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-                        <h3 className="text-2xl font-black uppercase tracking-tight mb-8">Application Details</h3>
+                    <div className="lg:col-span-7 bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+                        <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tight mb-6 sm:mb-8">Application Details</h3>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {error && (
                                 <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-4 rounded-xl text-sm font-bold flex items-center gap-2 mb-6">
@@ -245,11 +245,11 @@ export default function PartnerProgram() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">Legal Entity / Company Name</label>
-                                        <input name="companyName" value={formData.companyName} onChange={handleChange} required className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="Registered company name" type="text" />
+                                        <input name="companyName" value={formData.companyName} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="Registered company name" type="text" />
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">Contact Person Name</label>
-                                        <input name="fullName" value={formData.fullName} onChange={handleChange} required className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="Your full name" type="text" />
+                                        <input name="fullName" value={formData.fullName} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="Your full name" type="text" />
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">Mobile Number</label>
@@ -257,24 +257,24 @@ export default function PartnerProgram() {
                                             <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-slate-500">
                                                 <span className="font-bold border-r border-slate-300 dark:border-slate-600 pr-2">+91</span>
                                             </div>
-                                            <input name="mobile" value={formData.mobile} onChange={handleChange} className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary pl-16 py-3" placeholder="9876543210" type="tel" maxLength={10} required />
+                                            <input name="mobile" value={formData.mobile} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary pl-16 py-3 text-sm" placeholder="9876543210" type="tel" maxLength={10} required />
                                         </div>
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">Email Address</label>
-                                        <input name="email" value={formData.email} onChange={handleChange} className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="vendor@company.com" type="email" required />
+                                        <input name="email" value={formData.email} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="vendor@company.com" type="email" required />
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">Create Password</label>
-                                        <input name="password" value={formData.password} onChange={handleChange} className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="8+ characters" type="password" required minLength={8} />
+                                        <input name="password" value={formData.password} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="8+ characters" type="password" required minLength={8} />
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">Years in Business</label>
-                                        <input name="yearsInBusiness" value={formData.yearsInBusiness} onChange={handleChange} className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="e.g. 5" type="number" min="0" required />
+                                        <input name="yearsInBusiness" value={formData.yearsInBusiness} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="e.g. 5" type="number" min="0" required />
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">GST Number (Optional)</label>
-                                        <input name="gst" value={formData.gst} onChange={handleChange} className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="22AAAAA0000A1Z5" type="text" />
+                                        <input name="gst" value={formData.gst} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="22AAAAA0000A1Z5" type="text" />
                                     </div>
                                 </div>
                             </div>
@@ -285,7 +285,7 @@ export default function PartnerProgram() {
                                 <div className="grid grid-cols-1 gap-6">
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">Total Fleet Size</label>
-                                        <select name="fleetSize" value={formData.fleetSize} onChange={handleChange} required className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent dark:bg-slate-900 focus:ring-primary focus:border-primary p-3">
+                                        <select name="fleetSize" value={formData.fleetSize} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent dark:bg-slate-900 focus:ring-primary focus:border-primary p-3 text-sm">
                                             <option value="" className="bg-white dark:bg-slate-900" disabled>Select fleet size</option>
                                             <option value="1-5 Machines" className="bg-white dark:bg-slate-900">1-5 Machines</option>
                                             <option value="6-15 Machines" className="bg-white dark:bg-slate-900">6-15 Machines</option>
@@ -295,7 +295,7 @@ export default function PartnerProgram() {
                                     </div>
                                     <div className="flex flex-col gap-2">
                                         <label className="text-sm font-semibold">Types of Machines Owned</label>
-                                        <textarea name="machineTypes" value={formData.machineTypes} onChange={handleChange} required className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="e.g. Excavators, JCBs, Cranes, Forklifts..." rows={3}></textarea>
+                                        <textarea name="machineTypes" value={formData.machineTypes} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="e.g. Excavators, JCBs, Cranes, Forklifts..." rows={3}></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -306,11 +306,11 @@ export default function PartnerProgram() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                                     <div className="flex flex-col gap-2 md:col-span-1">
                                         <label className="text-sm font-semibold">States/Cities Covered</label>
-                                        <input name="regions" value={formData.regions} onChange={handleChange} required className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="e.g. Maharashtra, Karnataka (Bangalore, Mysore)" type="text" />
+                                        <input name="regions" value={formData.regions} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="e.g. Maharashtra, Karnataka (Bangalore, Mysore)" type="text" />
                                     </div>
                                     <div className="flex flex-col gap-2 md:col-span-1">
                                         <label className="text-sm font-semibold">Base Pincode</label>
-                                        <input name="pincode" value={formData.pincode} onChange={handleChange} required className="w-full rounded-lg border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3" placeholder="e.g. 400001" type="text" />
+                                        <input name="pincode" value={formData.pincode} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="e.g. 400001" type="text" />
                                     </div>
                                 </div>
                             </div>
@@ -388,7 +388,7 @@ export default function PartnerProgram() {
                 {/* FAQ or Support Section Placeholder */}
                 <section className="bg-slate-50 dark:bg-slate-900/50 w-full py-16 px-6 border-y border-slate-200 dark:border-slate-800">
                     <div className="max-w-4xl mx-auto text-center">
-                        <h2 className="text-3xl font-black uppercase italic tracking-tight mb-4 text-slate-900 dark:text-white">Have questions?</h2>
+                        <h2 className="text-xl sm:text-3xl font-black uppercase italic tracking-tight mb-4 text-slate-900 dark:text-white">Have questions?</h2>
                         <p className="text-slate-600 dark:text-slate-400 mb-8 font-medium">Our dedicated partner support team is here to help you get started.</p>
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
                             <Link className="flex items-center justify-center gap-3 px-8 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-bold hover:border-primary hover:text-primary transition-colors shadow-sm" href="#">
