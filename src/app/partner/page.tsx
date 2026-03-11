@@ -60,8 +60,41 @@ export default function PartnerProgram() {
         setFormData({ ...formData, [name]: value });
     };
 
+    const validateStep = (currentStep: number): string | null => {
+        if (currentStep === 1) {
+            if (!formData.companyName.trim()) return "Please enter your company name.";
+            if (!formData.fullName.trim()) return "Please enter contact person name.";
+            if (!formData.mobile || formData.mobile.length !== 10) return "Please enter a valid 10-digit mobile number.";
+            if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) return "Please enter a valid email address.";
+            if (!formData.password || formData.password.length < 8) return "Password must be at least 8 characters.";
+        }
+        if (currentStep === 2) {
+            if (!formData.yearsInBusiness) return "Please enter years in business.";
+            if (!formData.fleetSize) return "Please select your fleet size.";
+            if (!formData.machineTypes.trim()) return "Please enter the types of machines you own.";
+        }
+        return null;
+    };
+
+    const handleNextStep = () => {
+        const validationError = validateStep(step);
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+        setError('');
+        setStep(step + 1);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Final validation
+        if (!formData.regions.trim() || !formData.pincode.trim()) {
+            setError("Please fill in all required fields.");
+            return;
+        }
+
         setIsSubmitting(true);
         setError("");
 
@@ -366,7 +399,7 @@ export default function PartnerProgram() {
                                     </button>
                                 )}
                                 {step < totalSteps ? (
-                                    <button type="button" onClick={() => { setError(''); setStep(step + 1); }} className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-white font-black uppercase py-3.5 rounded-xl shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98] text-sm">
+                                    <button type="button" onClick={handleNextStep} className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-white font-black uppercase py-3.5 rounded-xl shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98] text-sm">
                                         Next <ArrowRight className="h-4 w-4" />
                                     </button>
                                 ) : (
