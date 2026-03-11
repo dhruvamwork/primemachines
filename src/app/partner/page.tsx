@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
-import { HardHat, TrendingUp, ShieldCheck, CreditCard, Building2, Factory, Wrench, Mail, Phone, Menu, CheckCircle, AlertCircle, ImagePlus, X } from "lucide-react";
+import { HardHat, TrendingUp, ShieldCheck, CreditCard, Building2, Factory, Wrench, Mail, Phone, Menu, CheckCircle, AlertCircle, ImagePlus, X, ArrowLeft, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 export default function PartnerProgram() {
@@ -26,6 +26,9 @@ export default function PartnerProgram() {
     const logoInputRef = useRef<HTMLInputElement>(null);
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [logoPreview, setLogoPreview] = useState<string | null>(null);
+    const [step, setStep] = useState(1);
+    const [showPassword, setShowPassword] = useState(false);
+    const totalSteps = 3;
 
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -197,94 +200,110 @@ export default function PartnerProgram() {
                 <section className="max-w-6xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-12 gap-12 w-full">
                     {/* Registration Form */}
                     <div className="lg:col-span-7 bg-white dark:bg-slate-900 p-5 sm:p-8 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
-                        <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tight mb-6 sm:mb-8">Application Details</h3>
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Progress Bar */}
+                        <div className="mb-8">
+                            <div className="flex items-center justify-between mb-3">
+                                {[1, 2, 3].map((s) => (
+                                    <div key={s} className="flex items-center gap-2">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all duration-300 ${
+                                            step >= s ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                                        }`}>
+                                            {step > s ? <CheckCircle className="h-4 w-4" /> : s}
+                                        </div>
+                                        <span className={`text-xs font-bold uppercase tracking-wider hidden sm:block ${
+                                            step >= s ? 'text-primary' : 'text-slate-400'
+                                        }`}>
+                                            {s === 1 ? 'Company' : s === 2 ? 'Fleet' : 'Location'}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-1.5">
+                                <div className="bg-primary h-1.5 rounded-full transition-all duration-500 ease-out" style={{ width: `${(step / totalSteps) * 100}%` }} />
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleSubmit}>
                             {error && (
                                 <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 p-4 rounded-xl text-sm font-bold flex items-center gap-2 mb-6">
                                     <AlertCircle className="h-5 w-5 shrink-0" />
                                     {error}
                                 </div>
                             )}
-                            {/* Section 1: Company Details */}
-                            <div className="space-y-6">
-                                <h4 className="text-lg font-bold border-b border-slate-200 dark:border-slate-800 pb-2 uppercase text-primary">1. Company & Contact Details</h4>
 
-                                {/* Logo Upload */}
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-semibold">Company Logo (Optional)</label>
-                                    <input
-                                        type="file"
-                                        ref={logoInputRef}
-                                        onChange={handleLogoChange}
-                                        accept="image/jpeg,image/png,image/webp,image/svg+xml"
-                                        className="hidden"
-                                    />
-                                    {logoPreview ? (
-                                        <div className="relative w-32 h-32 rounded-xl overflow-hidden border-2 border-primary/30 shadow-md group">
-                                            <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-contain bg-white p-2" />
-                                            <button
-                                                type="button"
-                                                onClick={() => { setLogoFile(null); setLogoPreview(null); }}
-                                                className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full shadow-md hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                                            >
-                                                <X className="h-3 w-3" />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div
-                                            onClick={() => logoInputRef.current?.click()}
-                                            className="w-32 h-32 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                                        >
-                                            <ImagePlus className="h-8 w-8 text-slate-400 mb-1" />
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Upload Logo</span>
-                                        </div>
-                                    )}
-                                    <p className="text-[11px] text-slate-400 font-medium">JPG, PNG, WebP or SVG (Max 2MB)</p>
-                                </div>
+                            {/* Step 1: Company & Contact */}
+                            {step === 1 && (
+                                <div className="space-y-5 animate-in">
+                                    <h4 className="text-base sm:text-lg font-bold uppercase text-primary mb-4">Company & Contact Details</h4>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                                    {/* Logo Upload */}
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-semibold">Legal Entity / Company Name</label>
+                                        <label className="text-sm font-semibold">Company Logo (Optional)</label>
+                                        <input type="file" ref={logoInputRef} onChange={handleLogoChange} accept="image/jpeg,image/png,image/webp,image/svg+xml" className="hidden" />
+                                        {logoPreview ? (
+                                            <div className="relative w-24 h-24 rounded-xl overflow-hidden border-2 border-primary/30 shadow-md group">
+                                                <img src={logoPreview} alt="Logo" className="w-full h-full object-contain bg-white p-2" />
+                                                <button type="button" onClick={() => { setLogoFile(null); setLogoPreview(null); }} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full shadow-md hover:bg-red-600 transition-colors">
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div onClick={() => logoInputRef.current?.click()} className="w-24 h-24 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                                <ImagePlus className="h-6 w-6 text-slate-400 mb-1" />
+                                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Upload</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-semibold">Company Name *</label>
                                         <input name="companyName" value={formData.companyName} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="Registered company name" type="text" />
                                     </div>
+
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-semibold">Contact Person Name</label>
+                                        <label className="text-sm font-semibold">Contact Person Name *</label>
                                         <input name="fullName" value={formData.fullName} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="Your full name" type="text" />
                                     </div>
+
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-semibold">Mobile Number</label>
+                                        <label className="text-sm font-semibold">Mobile Number *</label>
                                         <div className="relative">
                                             <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center gap-2 text-slate-500">
-                                                <span className="font-bold border-r border-slate-300 dark:border-slate-600 pr-2">+91</span>
+                                                <span className="font-bold border-r border-slate-300 dark:border-slate-600 pr-2 text-sm">+91</span>
                                             </div>
                                             <input name="mobile" value={formData.mobile} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary pl-16 py-3 text-sm" placeholder="9876543210" type="tel" maxLength={10} required />
                                         </div>
                                     </div>
+
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-semibold">Email Address</label>
+                                        <label className="text-sm font-semibold">Email Address *</label>
                                         <input name="email" value={formData.email} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="vendor@company.com" type="email" required />
                                     </div>
+
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-semibold">Create Password</label>
-                                        <input name="password" value={formData.password} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="8+ characters" type="password" required minLength={8} />
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-semibold">Years in Business</label>
-                                        <input name="yearsInBusiness" value={formData.yearsInBusiness} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="e.g. 5" type="number" min="0" required />
-                                    </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-semibold">GST Number (Optional)</label>
-                                        <input name="gst" value={formData.gst} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="22AAAAA0000A1Z5" type="text" />
+                                        <label className="text-sm font-semibold">Create Password *</label>
+                                        <div className="relative">
+                                            <input name="password" value={formData.password} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 pr-12 text-sm" placeholder="8+ characters" type={showPassword ? 'text' : 'password'} required minLength={8} />
+                                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Section 2: Fleet Overview */}
-                            <div className="space-y-6 pt-6">
-                                <h4 className="text-lg font-bold border-b border-slate-200 dark:border-slate-800 pb-2 uppercase text-primary">2. Fleet Overview</h4>
-                                <div className="grid grid-cols-1 gap-6">
+                            {/* Step 2: Fleet Details */}
+                            {step === 2 && (
+                                <div className="space-y-5 animate-in">
+                                    <h4 className="text-base sm:text-lg font-bold uppercase text-primary mb-4">Fleet Overview</h4>
+
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-semibold">Total Fleet Size</label>
+                                        <label className="text-sm font-semibold">Years in Business *</label>
+                                        <input name="yearsInBusiness" value={formData.yearsInBusiness} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="e.g. 5" type="number" min="0" required />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-semibold">Total Fleet Size *</label>
                                         <select name="fleetSize" value={formData.fleetSize} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent dark:bg-slate-900 focus:ring-primary focus:border-primary p-3 text-sm">
                                             <option value="" className="bg-white dark:bg-slate-900" disabled>Select fleet size</option>
                                             <option value="1-5 Machines" className="bg-white dark:bg-slate-900">1-5 Machines</option>
@@ -293,41 +312,68 @@ export default function PartnerProgram() {
                                             <option value="50+ Machines" className="bg-white dark:bg-slate-900">50+ Machines</option>
                                         </select>
                                     </div>
+
                                     <div className="flex flex-col gap-2">
-                                        <label className="text-sm font-semibold">Types of Machines Owned</label>
+                                        <label className="text-sm font-semibold">Types of Machines *</label>
                                         <textarea name="machineTypes" value={formData.machineTypes} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="e.g. Excavators, JCBs, Cranes, Forklifts..." rows={3}></textarea>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* Section 3: Operating Regions */}
-                            <div className="space-y-6 pt-6">
-                                <h4 className="text-lg font-bold border-b border-slate-200 dark:border-slate-800 pb-2 uppercase text-primary">3. Operating Regions</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                                    <div className="flex flex-col gap-2 md:col-span-1">
-                                        <label className="text-sm font-semibold">States/Cities Covered</label>
-                                        <input name="regions" value={formData.regions} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="e.g. Maharashtra, Karnataka (Bangalore, Mysore)" type="text" />
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-semibold">GST Number (Optional)</label>
+                                        <input name="gst" value={formData.gst} onChange={handleChange} className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="22AAAAA0000A1Z5" type="text" />
                                     </div>
-                                    <div className="flex flex-col gap-2 md:col-span-1">
-                                        <label className="text-sm font-semibold">Base Pincode</label>
+                                </div>
+                            )}
+
+                            {/* Step 3: Location & Submit */}
+                            {step === 3 && (
+                                <div className="space-y-5 animate-in">
+                                    <h4 className="text-base sm:text-lg font-bold uppercase text-primary mb-4">Operating Region</h4>
+
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-semibold">States / Cities Covered *</label>
+                                        <input name="regions" value={formData.regions} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="e.g. Maharashtra, Karnataka" type="text" />
+                                    </div>
+
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-sm font-semibold">Base Pincode *</label>
                                         <input name="pincode" value={formData.pincode} onChange={handleChange} required className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent focus:ring-primary focus:border-primary p-3 text-sm" placeholder="e.g. 400001" type="text" />
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* Form Actions */}
-                            <div className="pt-10 space-y-4">
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    <button disabled={isSubmitting} className="flex-1 bg-primary hover:bg-orange-600 disabled:opacity-70 disabled:hover:scale-100 disabled:hover:bg-primary text-white font-black uppercase italic py-4 rounded-xl shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]" type="submit">
-                                        {isSubmitting ? "Submitting..." : "Submit Application to Admin"}
-                                    </button>
-                                    <button className="flex-1 border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold uppercase tracking-wider py-4 rounded-xl transition-all" type="button">
-                                        Save Progress
-                                    </button>
+                                    {/* Summary Card */}
+                                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+                                        <p className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">Review Your Details</p>
+                                        <div className="space-y-1.5 text-sm">
+                                            <p><span className="text-slate-500">Company:</span> <span className="font-semibold">{formData.companyName || '—'}</span></p>
+                                            <p><span className="text-slate-500">Contact:</span> <span className="font-semibold">{formData.fullName || '—'}</span></p>
+                                            <p><span className="text-slate-500">Mobile:</span> <span className="font-semibold">{formData.mobile ? `+91 ${formData.mobile}` : '—'}</span></p>
+                                            <p><span className="text-slate-500">Email:</span> <span className="font-semibold">{formData.email || '—'}</span></p>
+                                            <p><span className="text-slate-500">Fleet:</span> <span className="font-semibold">{formData.fleetSize || '—'}</span></p>
+                                        </div>
+                                    </div>
+
+                                    <p className="text-center text-xs text-slate-500 font-medium">
+                                        By submitting, you agree to our Vendor Terms of Service.
+                                    </p>
                                 </div>
-                                <p className="text-center text-xs text-slate-500 font-medium">
-                                    By submitting, you agree to our Vendor Terms of Service and Privacy Policy.
-                                </p>
+                            )}
+
+                            {/* Navigation Buttons */}
+                            <div className="flex gap-3 mt-8">
+                                {step > 1 && (
+                                    <button type="button" onClick={() => { setStep(step - 1); setError(''); }} className="flex-1 flex items-center justify-center gap-2 border-2 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold uppercase tracking-wider py-3.5 rounded-xl transition-all text-sm">
+                                        <ArrowLeft className="h-4 w-4" /> Back
+                                    </button>
+                                )}
+                                {step < totalSteps ? (
+                                    <button type="button" onClick={() => { setError(''); setStep(step + 1); }} className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-orange-600 text-white font-black uppercase py-3.5 rounded-xl shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98] text-sm">
+                                        Next <ArrowRight className="h-4 w-4" />
+                                    </button>
+                                ) : (
+                                    <button disabled={isSubmitting} className="flex-1 bg-primary hover:bg-orange-600 disabled:opacity-70 text-white font-black uppercase py-3.5 rounded-xl shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98] text-sm" type="submit">
+                                        {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                                    </button>
+                                )}
                             </div>
                         </form>
                     </div>
