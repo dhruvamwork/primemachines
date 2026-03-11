@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import Link from "next/link";
-import { HardHat, ArrowLeft, Save, CheckCircle2, X, ImagePlus, Plus, Hash, Clock, Wrench, IndianRupee, MapPin, User } from "lucide-react";
+import { HardHat, ArrowLeft, Save, CheckCircle2, X, ImagePlus, Clock, Wrench, IndianRupee, MapPin, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -33,23 +33,8 @@ export default function UploadVehicle() {
     const [pincode, setPincode] = useState("");
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-    // Per-unit details
-    const [units, setUnits] = useState<UnitDetail[]>([{ registration_plate: '', mfg_year: '' }]);
-    const quantity = units.length;
-
-    const addUnit = () => {
-        setUnits(prev => [...prev, { registration_plate: '', mfg_year: '' }]);
-    };
-
-    const removeUnit = (index: number) => {
-        if (units.length <= 1) return;
-        setUnits(prev => prev.filter((_, i) => i !== index));
-    };
-
-    const updateUnit = (index: number, field: keyof UnitDetail, value: string) => {
-        setUnits(prev => prev.map((u, i) => i === index ? { ...u, [field]: value } : u));
-    };
+    const [registrationPlate, setRegistrationPlate] = useState("");
+    const [mfgYear, setMfgYear] = useState("");
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -109,29 +94,27 @@ export default function UploadVehicle() {
                 }
             }
 
-            // Insert one record per unit
-            const records = units.map((unit) => ({
-                name: name,
-                category: category,
-                brand: brand,
-                registration_plate: unit.registration_plate,
-                mfg_year: unit.mfg_year ? parseInt(unit.mfg_year) : null,
-                price_hourly: parseInt(priceHourly) || 0,
-                price_daily: parseInt(priceDaily) || 0,
-                price_monthly: parseInt(priceMonthly) || 0,
-                price: parseInt(priceDaily) || 0,
-                operator_included: operatorIncluded,
-                quantity: 1,
-                description: `Machine Time: ${machineTime || 'N/A'} | Service: ${serviceSpec || 'N/A'} | Rent Basis: ${rentBasis} | ${description}`,
-                location: pincode ? `${location} - ${pincode}` : location,
-                image: imageUrl,
-                vendor_id: vendorIdToUse,
-                status: 'available'
-            }));
-
+            // Insert single record
             const { error: insertError } = await supabase
                 .from('machines')
-                .insert(records);
+                .insert([{
+                    name: name,
+                    category: category,
+                    brand: brand,
+                    registration_plate: registrationPlate,
+                    mfg_year: mfgYear ? parseInt(mfgYear) : null,
+                    price_hourly: parseInt(priceHourly) || 0,
+                    price_daily: parseInt(priceDaily) || 0,
+                    price_monthly: parseInt(priceMonthly) || 0,
+                    price: parseInt(priceDaily) || 0,
+                    operator_included: operatorIncluded,
+                    quantity: 1,
+                    description: `Machine Time: ${machineTime || 'N/A'} | Service: ${serviceSpec || 'N/A'} | Rent Basis: ${rentBasis} | ${description}`,
+                    location: pincode ? `${location} - ${pincode}` : location,
+                    image: imageUrl,
+                    vendor_id: vendorIdToUse,
+                    status: 'available'
+                }]);
 
             if (insertError) {
                 console.error("Insert error:", insertError);
@@ -156,7 +139,7 @@ export default function UploadVehicle() {
                     <CheckCircle2 className="h-16 w-16 text-green-500" />
                 </div>
                 <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                    {quantity > 1 ? `${quantity} Machines Uploaded!` : 'Machine Uploaded!'}
+                    Machine Uploaded!
                 </h2>
                 <p className="text-slate-500">Redirecting to dashboard...</p>
             </div>
@@ -347,56 +330,28 @@ export default function UploadVehicle() {
                         </div>
                     </div>
 
-                    {/* ═══════ SECTION 4: Vehicle Units ═══════ */}
+                    {/* ═══════ SECTION 4: Vehicle Registration ═══════ */}
                     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                        <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                            <h3 className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Vehicle Details</h3>
-                            <button type="button" onClick={addUnit} className="flex items-center gap-1 px-3 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-primary/20 transition-colors">
-                                <Plus className="size-3" /> Add Unit
-                            </button>
+                        <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                            <h3 className="text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Vehicle Registration</h3>
                         </div>
-
-                        <div className="p-4 space-y-3">
-                            {units.map((unit, index) => (
-                                <div key={index} className="relative bg-slate-50/80 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-3">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <span className="flex items-center justify-center w-6 h-6 rounded-md bg-primary text-white text-[10px] font-black">{index + 1}</span>
-                                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Unit {index + 1}</span>
-                                        </div>
-                                        {units.length > 1 && (
-                                            <button type="button" onClick={() => removeUnit(index)} className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20">
-                                                <X className="size-3.5" />
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div>
-                                            <label className={labelClass}>Vehicle No. *</label>
-                                            <input required value={unit.registration_plate} onChange={(e) => updateUnit(index, 'registration_plate', e.target.value)} type="text" className={`${inputClass} font-bold tracking-wider uppercase text-xs`} placeholder="MH-04-AB-1234" />
-                                        </div>
-                                        <div>
-                                            <label className={labelClass}>Mfg Year *</label>
-                                            <input required value={unit.mfg_year} onChange={(e) => updateUnit(index, 'mfg_year', e.target.value)} type="number" className={inputClass} placeholder="e.g. 2021" min="1990" max="2030" />
-                                        </div>
-                                    </div>
+                        <div className="p-4">
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className={labelClass}>Vehicle No. (Reg Plate) *</label>
+                                    <input required value={registrationPlate} onChange={(e) => setRegistrationPlate(e.target.value)} type="text" className={`${inputClass} font-bold tracking-wider uppercase text-xs`} placeholder="MH-04-AB-1234" />
                                 </div>
-                            ))}
-                        </div>
-
-                        {quantity > 1 && (
-                            <div className="px-4 pb-3">
-                                <p className="text-[10px] text-slate-400 flex items-center gap-1">
-                                    <Hash className="size-3" />
-                                    {quantity} machines will be uploaded as separate entries.
-                                </p>
+                                <div>
+                                    <label className={labelClass}>Mfg Year *</label>
+                                    <input required value={mfgYear} onChange={(e) => setMfgYear(e.target.value)} type="number" className={inputClass} placeholder="e.g. 2021" min="1990" max="2030" />
+                                </div>
                             </div>
-                        )}
+                        </div>
                     </div>
 
                     {/* Submit */}
                     <button type="submit" disabled={submitting} className="w-full bg-primary hover:bg-orange-600 text-white font-black py-4 rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-[0.98] shadow-lg disabled:opacity-70 uppercase tracking-widest text-sm">
-                        {submitting ? "Uploading..." : quantity > 1 ? `Save ${quantity} Machines` : "Save Listing"}
+                        {submitting ? "Uploading..." : "Save Listing"}
                         {!submitting && <Save className="h-5 w-5" />}
                     </button>
                 </form>
